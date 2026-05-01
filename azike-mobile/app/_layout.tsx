@@ -18,7 +18,7 @@ SplashScreen.preventAutoHideAsync();
 export default function RootLayout() {
   const notificationListener = useRef<Notifications.EventSubscription>();
   const responseListener = useRef<Notifications.EventSubscription>();
-  const { isAuthenticated, token, fetchMe, updateDeviceToken } = useAuthStore();
+  const { isAuthenticated, isHydrated, token, fetchMe, updateDeviceToken } = useAuthStore();
 
   useEffect(() => {
     setupNotificationListeners(() => {});

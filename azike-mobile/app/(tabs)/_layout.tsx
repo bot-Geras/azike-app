@@ -1,9 +1,18 @@
 
-import { Tabs } from 'expo-router';
+import { Tabs, Redirect } from 'expo-router';
+import { useAuthStore } from '../../stores/authStore';
 import { HomeIcon, TicketIcon, QrCodeIcon, UserIcon } from 'react-native-heroicons/outline';
 import { HomeIcon as HomeSolid, TicketIcon as TicketSolid, QrCodeIcon as QrCodeSolid, UserIcon as UserSolid } from 'react-native-heroicons/solid';
 
 export default function TabLayout() {
+  const { isAuthenticated, isHydrated } = useAuthStore();
+
+  if (!isHydrated) return null;
+
+  if (!isAuthenticated) {
+    return <Redirect href="/(auth)/login" />;
+  }
+
   return (
     <Tabs
       screenOptions={{
