@@ -1,11 +1,20 @@
 
 import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
+import Constants from 'expo-constants';
 import { Platform } from 'react-native';
 import { router } from 'expo-router';
 import { api } from './api';
 
 export async function registerForPushNotificationsAsync() {
+  // Check if running in Expo Go
+  const isExpoGo = Constants.appOwnership === 'expo';
+  
+  if (isExpoGo) {
+    console.warn('Push notifications are not fully supported in Expo Go. Please use a development build.');
+    return null;
+  }
+
   if (!Device.isDevice) {
     console.log('Push notifications require physical device');
     return null;
@@ -24,23 +33,28 @@ export async function registerForPushNotificationsAsync() {
     return null;
   }
 
-  const token = (await Notifications.getExpoPushTokenAsync({
-    projectId: process.env.EXPO_PROJECT_ID
-  })).data;
+  try {
+    const token = (await Notifications.getExpoPushTokenAsync({
+      projectId: process.env.EXPO_PROJECT_ID || Constants.expoConfig?.extra?.eas?.projectId
+    })).data;
 
-  if (Platform.OS === 'android') {
-    await Notifications.setNotificationChannelAsync('azike_notifications', {
-      name: 'AZIKE Notifications',
-      importance: Notifications.AndroidImportance.HIGH,
-      vibrationPattern: [0, 250, 250, 250],
-      sound: 'default',
-    });
+    if (Platform.OS === 'android') {
+      await Notifications.setNotificationChannelAsync('azike_notifications', {
+        name: 'AZIKE Notifications',
+        importance: Notifications.AndroidImportance.HIGH,
+        vibrationPattern: [0, 250, 250, 250],
+        sound: 'default',
+      });
+    }
+
+    return token;
+  } catch (e) {
+    console.error('Error getting push token:', e);
+    return null;
   }
-
-  return token;
 }
 
-export function setupNotificationListeners() {
+export function setupNotificationListeners(p0: (response: any) => void) {
   // Handle notifications received while app is foregrounded
   Notifications.setNotificationHandler({
     handleNotification: async () => ({

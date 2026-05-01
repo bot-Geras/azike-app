@@ -9,7 +9,7 @@ import ViewShot from 'react-native-view-shot';
 import { useRef } from 'react';
 
 export default function MembershipCardScreen() {
-  const { membership, isLoading, refetch } = useMembership();
+  const { membership, card, isLoading, refetch } = useMembership();
   const cardRef = useRef<ViewShot>(null);
 
   const handleShare = async () => {
@@ -66,12 +66,12 @@ export default function MembershipCardScreen() {
               <View>
                 <Text className="text-white/80 text-sm">AZIKE Member</Text>
                 <Text className="text-white text-2xl font-bold">
-                  {membership?.digital_card?.member_name}
+                  {card?.member_name || membership?.digital_card?.member_name}
                 </Text>
               </View>
               <View className="bg-white/20 px-3 py-1 rounded-full">
                 <Text className="text-white text-xs font-medium uppercase">
-                  {membership?.membership_tier}
+                  {card?.tier || membership?.membership_tier}
                 </Text>
               </View>
             </View>
@@ -80,14 +80,14 @@ export default function MembershipCardScreen() {
             <View className="mb-6">
               <Text className="text-white/60 text-xs mb-1">Member ID</Text>
               <Text className="text-white text-lg font-mono tracking-wider">
-                {membership?.digital_card?.member_id}
+                {card?.member_id || membership?.digital_card?.member_id}
               </Text>
             </View>
 
             {/* Barcode */}
             <View className="bg-white rounded-xl p-4 items-center">
               <Barcode 
-                value={membership?.digital_card?.barcode_data || ''} 
+                value={card?.barcode_data || membership?.digital_card?.barcode_data || ''} 
                 format="CODE128"
                 width={1.5}
                 height={70}
@@ -95,7 +95,7 @@ export default function MembershipCardScreen() {
                 lineColor="#1B5E20"
               />
               <Text className="text-gray-500 text-xs mt-2 font-mono">
-                {membership?.digital_card?.barcode_data?.slice(0, 30)}...
+                {(card?.barcode_data || membership?.digital_card?.barcode_data || '').slice(0, 30)}...
               </Text>
             </View>
 
@@ -104,13 +104,13 @@ export default function MembershipCardScreen() {
               <View>
                 <Text className="text-white/60 text-xs">Member Since</Text>
                 <Text className="text-white text-base">
-                  {new Date(membership?.digital_card?.member_since || '').toLocaleDateString()}
+                  {new Date(card?.member_since || membership?.digital_card?.member_since || '').toLocaleDateString()}
                 </Text>
               </View>
               <View>
                 <Text className="text-white/60 text-xs">Expires</Text>
                 <Text className="text-white text-base">
-                  {new Date(membership?.digital_card?.expiry_date || '').toLocaleDateString()}
+                  {new Date(card?.expiry_date || membership?.digital_card?.expiry_date || '').toLocaleDateString()}
                 </Text>
               </View>
             </View>

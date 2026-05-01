@@ -153,6 +153,7 @@ export class AuthService {
         include: { user_roles: true }
       });
 
+      // Check if user exists
       if (!user) {
         throw new Error('user_not_found');
       }

@@ -1,10 +1,10 @@
 
 import { useState, useEffect, useRef } from 'react';
-import { View, Text, TouchableOpacity, Alert, ActivityIndicator, Modal } from 'react-native';
+import { View, Text, TouchableOpacity, Alert, ActivityIndicator, Modal, ScrollView } from 'react-native';
 import { Camera, CameraView } from 'expo-camera';
 import { api } from '../../services/api';
 import { useAuth } from '../../hooks/useAuth';
-import { CheckIcon, XMarkIcon, UserIcon } from 'react-native-heroicons/outline';
+import { CheckIcon, XMarkIcon, UserIcon, UsersIcon } from 'react-native-heroicons/outline';
 import { useAudioPlayer } from 'expo-audio';
 
 interface ScanResult {
@@ -130,6 +130,10 @@ export default function ScannerScreen() {
 
   const selectedEventDetails = events.find(e => e.event_id === selectedEvent);
 
+  function setShowAttendees(arg0: boolean): void {
+    throw new Error('Function not implemented.');
+  }
+
   return (
     <View className="flex-1 bg-black">
       <CameraView
@@ -165,16 +169,74 @@ export default function ScannerScreen() {
           </View>
 
           {/* Footer */}
-          <View className="bg-black/50 p-5">
-            {scanned && scanning && (
-              <View className="items-center">
+          <View className="bg-black/50 p-5 flex-row justify-between items-center">
+            {scanned && scanning ? (
+              <View className="items-center flex-1">
                 <ActivityIndicator size="large" color="white" />
                 <Text className="text-white mt-2">Verifying...</Text>
               </View>
+            ) : (
+              <TouchableOpacity
+                className="bg-white/20 rounded-full p-4 items-center justify-center"
+                onPress={() => setShowAttendees(true)}
+              >
+                <UsersIcon size={24} color="white" />
+              </TouchableOpacity>
             )}
+            
+            <View className="flex-1 items-center">
+               <Text className="text-white/60 text-xs">Attendees</Text>
+               <Text className="text-white font-bold">
+                 0 / {selectedEventDetails?.capacity?.max || '∞'}
+               </Text>
+            </View>
           </View>
         </View>
       </CameraView>
+
+      {/* Attendees Modal */}
+      <Modal
+        visible={showAttendees}
+        animationType="slide"
+        transparent
+        onRequestClose={() => setShowAttendees(false)}
+      >
+        <View className="flex-1 bg-black/50 justify-end">
+          <View className="bg-white rounded-t-3xl p-6 h-[80%]">
+            <View className="flex-row justify-between items-center mb-6">
+              <Text className="text-2xl font-bold">Attendees</Text>
+              <TouchableOpacity onPress={() => setShowAttendees(false)}>
+                <XMarkIcon size={24} color="#374151" />
+              </TouchableOpacity>
+            </View>
+
+            {loadingAttendees ? (
+              <ActivityIndicator size="large" color="#2E7D32" />
+            ) : (
+              <ScrollView className="flex-1">
+                {attendees?.length === 0 ? (
+                  <Text className="text-gray-500 text-center mt-10">No attendees checked in yet</Text>
+                ) : (
+                  attendees?.map((attendee: any) => (
+                    <View key={attendee.id} className="flex-row items-center p-4 border-b border-gray-100">
+                      <View className="w-10 h-10 bg-primary/10 rounded-full items-center justify-center mr-3">
+                        <UserIcon size={20} color="#2E7D32" />
+                      </View>
+                      <View className="flex-1">
+                        <Text className="font-semibold">{attendee.first_name} {attendee.last_name}</Text>
+                        <Text className="text-gray-500 text-xs">Checked in: {new Date(attendee.checked_in_at).toLocaleTimeString()}</Text>
+                      </View>
+                      <View className="bg-success/10 px-2 py-1 rounded-full">
+                        <Text className="text-success text-xs font-medium">Present</Text>
+                      </View>
+                    </View>
+                  ))
+                )}
+              </ScrollView>
+            )}
+          </View>
+        </View>
+      </Modal>
 
       {/* Event Picker Modal */}
       <Modal

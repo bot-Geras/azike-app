@@ -1,6 +1,5 @@
 
 import * as SecureStore from 'expo-secure-store';
-import { useAuthStore } from '../stores/authStore';
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3001/v1';
 
@@ -8,6 +7,13 @@ interface RequestOptions extends RequestInit {
   params?: Record<string, string>;
   _retry?: boolean;
 }
+
+// Store a reference to the logout/refresh functions to avoid circular dependency
+let onUnauthorized: (() => void) | null = null;
+
+export const setUnauthorizedHandler = (handler: () => void) => {
+  onUnauthorized = handler;
+};
 
 async function request(endpoint: string, options: RequestOptions = {}) {
   const { params, _retry, ...init } = options;
@@ -38,8 +44,21 @@ async function request(endpoint: string, options: RequestOptions = {}) {
   // 3. Response Interceptor: Handle 401 and Token Refresh
   if (response.status === 401 && !_retry) {
     try {
-      await useAuthStore.getState().refreshAccessToken();
-      const newToken = await SecureStore.getItemAsync('access_token');
+      const refreshToken = await SecureStore.getItemAsync('refresh_token');
+      if (!refreshToken) throw new Error('No refresh token');
+
+      const refreshResponse = await fetch(`${API_BASE_URL}/auth/refresh`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ refresh_token: refreshToken }),
+      });
+
+      if (!refreshResponse.ok) throw new Error('Refresh failed');
+
+      const refreshData = await refreshResponse.json();
+      const { access_token } = refreshData.data;
+      
+      await SecureStore.setItemAsync('access_token', access_token);
       
       // Retry the request once with the new token
       return request(endpoint, {
@@ -47,11 +66,11 @@ async function request(endpoint: string, options: RequestOptions = {}) {
         _retry: true,
         headers: {
           ...init.headers as object,
-          Authorization: `Bearer ${newToken}`,
+          Authorization: `Bearer ${access_token}`,
         },
       });
     } catch (refreshError) {
-      useAuthStore.getState().logout();
+      if (onUnauthorized) onUnauthorized();
       throw refreshError;
     }
   }

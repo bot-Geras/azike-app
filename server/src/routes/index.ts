@@ -9,12 +9,12 @@ import announcementRoutes from '../modules/announcements/announcements.routes';
 import adminRoutes from '../modules/admin/admin.routes';
 const app = express()
 
-app.use('/api/v1/auth', authRoutes)
-app.use('api/v1/membership', membershipRoutes);
-app.use('api/v1/payments', paymentRoutes);
-app.use('api/v1/events', eventRoutes);
-app.use('api/v1/tickets', ticketRoutes);
-app.use('api/v1/checkin', checkinRoutes);
+app.use('/v1/auth', authRoutes)
+app.use('/v1/membership', membershipRoutes);
+app.use('/v1/payments', paymentRoutes);
+app.use('/v1/events', eventRoutes);
+app.use('/v1/tickets', ticketRoutes);
+app.use('/v1/checkin', checkinRoutes);
 app.use('/v1/announcements', announcementRoutes);
 app.use('/v1/admin', adminRoutes);
 export default app;

@@ -3,7 +3,15 @@ import { useAuthStore } from '../stores/authStore';
 import { api } from '../services/api';
 
 export const useAuth = () => {
-  const { login: storeLogin, logout: storeLogout, user, isAuthenticated, token } = useAuthStore();
+  const { 
+    login: storeLogin, 
+    logout: storeLogout, 
+    fetchMe,
+    updateDeviceToken,
+    user, 
+    isAuthenticated, 
+    token 
+  } = useAuthStore();
 
   const login = async (identifier: string, password: string) => {
     await storeLogin(identifier, password);
@@ -31,6 +39,8 @@ export const useAuth = () => {
     token,
     login,
     register,
-    logout
+    logout,
+    fetchMe,
+    updateDeviceToken
   };
 };

@@ -3,7 +3,7 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as SecureStore from 'expo-secure-store';
-import { api } from '../services/api';
+import { api, setUnauthorizedHandler } from '../services/api';
 
 interface AuthState {
   token: string | null;
@@ -13,6 +13,8 @@ interface AuthState {
   login: (identifier: string, password: string) => Promise<void>;
   logout: () => void;
   refreshAccessToken: () => Promise<void>;
+  fetchMe: () => Promise<void>;
+  updateDeviceToken: (fcmToken: string) => Promise<void>;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -67,6 +69,23 @@ export const useAuthStore = create<AuthState>()(
         
         set({ token: access_token });
       },
+
+      fetchMe: async () => {
+        try {
+          const response = await api.get('/auth/me');
+          set({ user: response.data.data });
+        } catch (error) {
+          console.error('Fetch me error:', error);
+        }
+      },
+
+      updateDeviceToken: async (fcmToken: string) => {
+        try {
+          await api.post('/auth/device-token', { fcm_token: fcmToken });
+        } catch (error) {
+          console.error('Update device token error:', error);
+        }
+      },
     }),
     {
       name: 'auth-storage',
@@ -78,3 +97,8 @@ export const useAuthStore = create<AuthState>()(
     }
   )
 );
+
+// Initialize the API unauthorized handler
+setUnauthorizedHandler(() => {
+  useAuthStore.getState().logout();
+});

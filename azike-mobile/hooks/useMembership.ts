@@ -17,6 +17,16 @@ export const useMembership = () => {
     staleTime: 5 * 60 * 1000,
   });
 
+  const { data: cardData, isLoading: isLoadingCard, refetch: refetchCard } = useQuery({
+    queryKey: ['membership-card'],
+    queryFn: async () => {
+      const response = await api.get('/membership/card');
+      return response.data.data;
+    },
+    enabled: isAuthenticated && !!data?.is_active,
+    staleTime: 5 * 60 * 1000,
+  });
+
   const renewMutation = useMutation({
     mutationFn: async ({ package_id, phone_number }: { package_id: string; phone_number?: string }) => {
       const response = await api.post('/membership/renew', { package_id, phone_number });
@@ -32,9 +42,13 @@ export const useMembership = () => {
 
   return {
     membership: data,
-    isLoading,
+    card: cardData,
+    isLoading: isLoading || (isLoadingCard && data?.is_active),
     error,
-    refetch,
+    refetch: () => {
+      refetch();
+      if (data?.is_active) refetchCard();
+    },
     renew: renewMutation.mutateAsync,
     isRenewing: renewMutation.isPending
   };

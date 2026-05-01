@@ -16,12 +16,12 @@ const queryClient = new QueryClient();
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
-  const notificationListener = useRef<Notifications.Subscription>();
-  const responseListener = useRef<Notifications.Subscription>();
-  const { isAuthenticated, token } = useAuthStore();
+  const notificationListener = useRef<Notifications.EventSubscription>();
+  const responseListener = useRef<Notifications.EventSubscription>();
+  const { isAuthenticated, token, fetchMe, updateDeviceToken } = useAuthStore();
 
   useEffect(() => {
-    setupNotificationListeners();
+    setupNotificationListeners(() => {});
 
     setTimeout(() => {
       SplashScreen.hideAsync();
@@ -39,6 +39,7 @@ export default function RootLayout() {
 
   useEffect(() => {
     if (isAuthenticated) {
+      fetchMe();
       registerPushToken();
     }
   }, [isAuthenticated, token]);
