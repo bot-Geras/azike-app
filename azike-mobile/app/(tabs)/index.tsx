@@ -1,98 +1,186 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
 
-import { HelloWave } from '@/components/hello-wave';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
-
+import { View, Text, ScrollView, TouchableOpacity, Image, ActivityIndicator } from 'react-native';
+import { useAuth } from '../../hooks/useAuth';
+import { useMembership } from '../../hooks/useMembership';
+import { router } from 'expo-router';
+import { CalendarIcon, TicketIcon, UserGroupIcon, BellIcon } from 'react-native-heroicons/outline';
+import { EventCardSkeleton, MembershipCardSkeleton, SkeletonLoader } from '../../components/SkeletonLoader';
+import { SafeAreaView } from 'react-native-safe-area-context';
 export default function HomeScreen() {
-  return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
-          <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-          </Link.Trigger>
-          <Link.Preview />
-          <Link.Menu>
-            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
-            <Link.MenuAction
-              title="Share"
-              icon="square.and.arrow.up"
-              onPress={() => alert('Share pressed')}
-            />
-            <Link.Menu title="More" icon="ellipsis">
-              <Link.MenuAction
-                title="Delete"
-                icon="trash"
-                destructive
-                onPress={() => alert('Delete pressed')}
-              />
-            </Link.Menu>
-          </Link.Menu>
-        </Link>
+  const { user } = useAuth();
+  const { membership, isLoading } = useMembership();
 
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return 'Good Morning';
+    if (hour < 17) return 'Good Afternoon';
+    return 'Good Evening';
+  };
+
+  if (isLoading) {
+    return (
+      <View className="flex-1 bg-white justify-center items-center">
+        <ActivityIndicator size="large" color="#2E7D32" />
+      </View>
+    );
+  }
+
+// if (isLoading) {
+//   return (
+//     <ScrollView className="flex-1 bg-gray-50">
+//       <View className="bg-primary px-5 pt-12 pb-6 rounded-b-3xl">
+//         <View className="flex-row justify-between items-center">
+//           <View>
+//             <SkeletonLoader className="w-32 h-5 bg-white/20 mb-2" />
+//             <SkeletonLoader className="w-48 h-8 bg-white/20" />
+//           </View>
+//           <SkeletonLoader className="w-10 h-10 bg-white/20 rounded-full" />
+//         </View>
+//         <View className="mt-6">
+//           <MembershipCardSkeleton />
+//         </View>
+//       </View>
+//       <View className="px-5 mt-6">
+//         <SkeletonLoader className="w-32 h-6 mb-4" />
+//         <EventCardSkeleton />
+//         <EventCardSkeleton />
+//       </View>
+//     </ScrollView>
+//   );
+// }
+
+
+  return (
+    <ScrollView className="flex-1 bg-gray-50">
+     <SafeAreaView>
+       {/* Header */}
+      <View className="bg-primary px-5 pt-12 pb-6 rounded-b-3xl">
+        <View className="flex-row justify-between items-center">
+          <View>
+            <Text className="text-white/80 text-base">
+              {getGreeting()}
+            </Text>
+            <Text className="text-white text-2xl font-bold">
+              {user?.first_name} 👋
+            </Text>
+          </View>
+          <TouchableOpacity onPress={() => router.push('/notifications')}>
+            <BellIcon size={24} color="white" />
+          </TouchableOpacity>
+        </View>
+
+        {/* Membership Status Card */}
+        <TouchableOpacity 
+          onPress={() => router.push('/card')}
+          className="bg-white rounded-xl p-4 mt-6"
+        >
+          <View className="flex-row justify-between items-center">
+            <View>
+              <Text className="text-gray-600 text-sm">Membership Status</Text>
+              <View className="flex-row items-center mt-1">
+                <View className={`w-2 h-2 rounded-full mr-2 ${
+                  membership?.is_active ? 'bg-success' : 'bg-error'
+                }`} />
+                <Text className={`text-lg font-semibold ${
+                  membership?.is_active ? 'text-success' : 'text-error'
+                }`}>
+                  {membership?.is_active ? 'Active' : 'Expired'}
+                </Text>
+              </View>
+            </View>
+            {membership?.is_active ? (
+              <View className="bg-primary/10 px-3 py-1 rounded-full">
+                <Text className="text-primary text-sm">
+                  {membership?.current_period.days_remaining} days left
+                </Text>
+              </View>
+            ) : (
+              <TouchableOpacity 
+                className="bg-primary px-4 py-2 rounded-lg"
+                onPress={() => router.push('/membership/renew')}
+              >
+                <Text className="text-white font-medium">Renew</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+          
+          {membership?.is_active && (
+            <View className="mt-3 pt-3 border-t border-gray-100">
+              <Text className="text-gray-500 text-xs">Member ID</Text>
+              <Text className="text-gray-800 font-mono text-sm">
+                {membership?.digital_card?.member_id}
+              </Text>
+            </View>
+          )}
+        </TouchableOpacity>
+      </View>
+
+      {/* Quick Actions */}
+      <View className="px-5 -mt-3">
+        <View className="bg-white rounded-xl p-4 shadow-sm flex-row justify-around">
+          <QuickAction 
+            icon={<CalendarIcon size={24} color="#2E7D32" />}
+            label="Events"
+            onPress={() => router.push('/events')}
+          />
+          <QuickAction 
+            icon={<TicketIcon size={24} color="#2E7D32" />}
+            label="My Tickets"
+            onPress={() => router.push('/tickets/my-tickets')}
+          />
+          <QuickAction 
+            icon={<UserGroupIcon size={24} color="#2E7D32" />}
+            label="Community"
+            onPress={() => router.push('/community')}
+          />
+        </View>
+      </View>
+
+      {/* Upcoming Events */}
+      <View className="px-5 mt-6">
+        <View className="flex-row justify-between items-center mb-4">
+          <Text className="text-lg font-semibold text-gray-800">Upcoming Events</Text>
+          <TouchableOpacity onPress={() => router.push('/events')}>
+            <Text className="text-primary">See All</Text>
+          </TouchableOpacity>
+        </View>
+        
+        {/* Placeholder for events - will be populated in Sprint 3 */}
+        <View className="bg-white rounded-xl p-4">
+          <Text className="text-gray-400 text-center py-8">
+            Events coming soon...
+          </Text>
+        </View>
+      </View>
+
+      {/* Announcements */}
+      <View className="px-5 mt-6 mb-8">
+        <Text className="text-lg font-semibold text-gray-800 mb-4">Announcements</Text>
+        <View className="bg-white rounded-xl p-4">
+          <Text className="text-gray-400 text-center py-4">
+            No announcements yet
+          </Text>
+        </View>
+      </View>
+     </SafeAreaView>
+    </ScrollView>
   );
 }
 
-const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
-  },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
-  },
-});
+function QuickAction({ icon, label, onPress }: { 
+  icon: React.ReactNode; 
+  label: string; 
+  onPress: () => void;
+}) {
+  return (
+    <TouchableOpacity 
+      className="items-center"
+      onPress={onPress}
+    >
+      <View className="w-12 h-12 bg-primary/10 rounded-full items-center justify-center mb-1">
+        {icon}
+      </View>
+      <Text className="text-gray-600 text-xs">{label}</Text>
+    </TouchableOpacity>
+  );
+}

@@ -11,3 +11,211 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+
+
+model users {
+  id                  String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  first_name          String    @db.VarChar(100)
+  last_name           String    @db.VarChar(100)
+  email               String    @unique @db.VarChar(255)
+  phone_number        String    @unique @db.VarChar(15)
+  password_hash       String    @db.VarChar(255)
+  profile_picture_url String?
+  id_number           String?   @db.VarChar(20)
+  created_at          DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at          DateTime  @default(now()) @updatedAt @db.Timestamptz(6)
+  is_email_verified   Boolean   @default(false)
+  is_phone_verified   Boolean   @default(false)
+  is_active           Boolean   @default(true)
+  fcm_token           String?
+
+  user_roles          user_roles[]
+  memberships         memberships[]
+  membership_renewals membership_renewals[]
+  tickets             tickets[]
+  transactions        transactions[]
+  events              events[]
+  announcements       announcements[]
+  user_notifications  user_notifications[]
+  ticket_checkins     tickets[]        @relation("checked_in_by")
+  
+  @@index([email])
+  @@index([phone_number])
+}
+
+model user_roles {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id    String   @db.Uuid
+  role       String   @db.VarChar(50)
+  created_at DateTime @default(now()) @db.Timestamptz(6)
+
+  users users @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@unique([user_id, role])
+}
+
+model memberships {
+  id                    String               @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id               String               @db.Uuid
+  status                String               @db.VarChar(50)
+  start_date            DateTime             @db.Date
+  end_date              DateTime             @db.Date
+  free_events_used      Int                  @default(0)
+  free_events_limit     Int                  @default(1)
+  last_free_event_date  DateTime?            @db.Timestamptz(6)
+  auto_renew_enabled    Boolean              @default(false)
+  created_at            DateTime             @default(now()) @db.Timestamptz(6)
+  updated_at            DateTime             @default(now()) @updatedAt @db.Timestamptz(6)
+  membership_tier       String               @default("standard") @db.VarChar(50)
+
+  users                 users                @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  membership_renewals   membership_renewals[]
+  tickets               tickets[]
+
+  @@index([user_id, status])
+  @@index([end_date])
+}
+
+model membership_renewals {
+  id                String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  membership_id     String    @db.Uuid
+  user_id           String    @db.Uuid
+  transaction_id    String    @db.Uuid
+  previous_end_date DateTime  @db.Date
+  new_end_date      DateTime  @db.Date
+  amount_paid       Decimal   @db.Decimal(10, 2)
+  renewed_at        DateTime  @default(now()) @db.Timestamptz(6)
+  payment_method    String    @default("mpesa") @db.VarChar(50)
+  receipt_number    String?   @unique @db.VarChar(100)
+
+  users             users     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  memberships       memberships @relation(fields: [membership_id], references: [id], onDelete: Cascade)
+  transactions      transactions @relation(fields: [transaction_id], references: [id])
+}
+
+model events {
+  id                     String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  title                  String    @db.VarChar(255)
+  description            String?
+  location               String    @db.VarChar(500)
+  location_coordinates   Unsupported("point")?
+  start_datetime         DateTime  @db.Timestamptz(6)
+  end_datetime           DateTime  @db.Timestamptz(6)
+  registration_deadline  DateTime? @db.Timestamptz(6)
+  banner_image_url       String?
+  member_price           Decimal   @db.Decimal(10, 2)
+  non_member_price       Decimal   @db.Decimal(10, 2)
+  is_free_for_members    Boolean   @default(false)
+  max_capacity           Int?
+  current_bookings       Int       @default(0)
+  status                 String    @db.VarChar(50)
+  visibility             String    @db.VarChar(50)
+  created_by             String    @db.Uuid
+  created_at             DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at             DateTime  @default(now()) @updatedAt @db.Timestamptz(6)
+
+  users                  users     @relation(fields: [created_by], references: [id])
+  tickets                tickets[]
+  announcements          announcements[]
+
+  @@index([status, start_datetime])
+  @@index([visibility])
+}
+
+model tickets {
+  id                          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  event_id                    String    @db.Uuid
+  user_id                     String    @db.Uuid
+  ticket_number               String    @unique @db.VarChar(50)
+  qr_code_data                String
+  qr_code_image_url           String?
+  ticket_type                 String    @db.VarChar(50)
+  price_paid                  Decimal   @db.Decimal(10, 2)
+  used_membership_entitlement Boolean   @default(false)
+  membership_id_at_time       String?   @db.Uuid
+  transaction_id              String?   @db.Uuid
+  is_checked_in               Boolean   @default(false)
+  checked_in_at               DateTime? @db.Timestamptz(6)
+  checked_in_by               String?   @db.Uuid
+  purchased_at                DateTime  @default(now()) @db.Timestamptz(6)
+  is_cancelled                Boolean   @default(false)
+  cancelled_at                DateTime? @db.Timestamptz(6)
+
+  events                      events    @relation(fields: [event_id], references: [id], onDelete: Cascade)
+  users                       users     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  memberships                 memberships? @relation(fields: [membership_id_at_time], references: [id])
+  transactions                transactions? @relation(fields: [transaction_id], references: [id])
+  checkin_staff               users?    @relation("checked_in_by", fields: [checked_in_by], references: [id])
+
+  @@unique([event_id, user_id])
+  @@index([qr_code_data])
+  @@index([event_id, user_id])
+  @@index([is_checked_in, event_id])
+}
+
+model transactions {
+  id                     String                 @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id                String                 @db.Uuid
+  phone_number_used      String                 @db.VarChar(15)
+  merchant_request_id    String?                @unique @db.VarChar(100)
+  checkout_request_id    String?                @unique @db.VarChar(100)
+  mpesa_receipt_number   String?                @unique @db.VarChar(50)
+  amount                 Decimal                @db.Decimal(10, 2)
+  transaction_type       String                 @db.VarChar(50)
+  reference_id           String?                @db.Uuid
+  reference_type         String?                @db.VarChar(50)
+  status                 String                 @db.VarChar(50)
+  stk_push_request_payload Json?
+  mpesa_callback_raw     Json?
+  failure_reason         String?
+  retry_count            Int                    @default(0)
+  created_at             DateTime               @default(now()) @db.Timestamptz(6)
+  updated_at             DateTime               @default(now()) @updatedAt @db.Timestamptz(6)
+  completed_at           DateTime?              @db.Timestamptz(6)
+
+  users                  users                  @relation(fields: [user_id], references: [id])
+  membership_renewals    membership_renewals[]
+  tickets                tickets[]
+
+  @@index([checkout_request_id])
+  @@index([mpesa_receipt_number])
+  @@index([status, created_at])
+  @@index([user_id, created_at])
+}
+
+model announcements {
+  id                      String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  title                   String    @db.VarChar(255)
+  body                    String
+  image_url               String?
+  target_audience         String    @db.VarChar(50)
+  target_event_id         String?   @db.Uuid
+  send_push_notification  Boolean   @default(true)
+  push_notification_sent  Boolean   @default(false)
+  push_notification_sent_at DateTime? @db.Timestamptz(6)
+  created_by              String    @db.Uuid
+  created_at              DateTime  @default(now()) @db.Timestamptz(6)
+  scheduled_for           DateTime? @db.Timestamptz(6)
+  expires_at              DateTime? @db.Timestamptz(6)
+
+  users                   users     @relation(fields: [created_by], references: [id])
+  events                  events?   @relation(fields: [target_event_id], references: [id])
+  user_notifications      user_notifications[]
+}
+
+model user_notifications {
+  id               String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id          String    @db.Uuid
+  announcement_id  String?   @db.Uuid
+  title            String    @db.VarChar(255)
+  body             String
+  data_payload     Json?
+  is_read          Boolean   @default(false)
+  read_at          DateTime? @db.Timestamptz(6)
+  created_at       DateTime  @default(now()) @db.Timestamptz(6)
+
+  users            users     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  announcements    announcements? @relation(fields: [announcement_id], references: [id], onDelete: Cascade)
+
+  @@index([user_id, is_read])
+}
