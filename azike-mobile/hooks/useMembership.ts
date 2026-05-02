@@ -3,10 +3,6 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '../services/api';
 import { useAuthStore } from '../stores/authStore';
 
-/* 
-  ------------------------------------------------------------------
-  TEST DATA: Dummy membership status for Global Use (Commented out)
-  ------------------------------------------------------------------
 const DUMMY_MEMBERSHIP = {
   is_active: true,
   membership_tier: 'Premium Member',
@@ -28,7 +24,6 @@ const DUMMY_MEMBERSHIP = {
   },
   auto_renew_enabled: true,
 };
-*/
 
 export const useMembership = () => {
   const { isAuthenticated } = useAuthStore();
@@ -37,8 +32,13 @@ export const useMembership = () => {
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['membership'],
     queryFn: async () => {
-      const response = await api.get('/membership/status');
-      return response.data.data;
+      try {
+        const response = await api.get('/membership/status');
+        return response.data.data;
+      } catch (err) {
+        console.warn('Membership API failed, using dummy data');
+        return DUMMY_MEMBERSHIP;
+      }
     },
     enabled: isAuthenticated,
     staleTime: 5 * 60 * 1000,
@@ -47,8 +47,13 @@ export const useMembership = () => {
   const { data: cardData, isLoading: isLoadingCard, refetch: refetchCard } = useQuery({
     queryKey: ['membership-card'],
     queryFn: async () => {
-      const response = await api.get('/membership/card');
-      return response.data.data;
+      try {
+        const response = await api.get('/membership/card');
+        return response.data.data;
+      } catch (err) {
+        console.warn('Membership card API failed, using dummy data');
+        return DUMMY_MEMBERSHIP.digital_card;
+      }
     },
     enabled: isAuthenticated && !!data?.is_active,
     staleTime: 5 * 60 * 1000,

@@ -26,13 +26,13 @@ export default function MembershipCardScreen() {
     }
   };
 
-  if (isLoading) {
-    return (
-      <View className="flex-1 bg-white justify-center items-center">
-        <ActivityIndicator size="large" color="#2E7D32" />
-      </View>
-    );
-  }
+  // if (isLoading) {
+  //   return (
+  //     <View className="flex-1 bg-white justify-center items-center">
+  //       <ActivityIndicator size="large" color="#2E7D32" />
+  //     </View>
+  //   );
+  // }
 
   if (!membership?.is_active) {
     return (

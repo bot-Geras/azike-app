@@ -51,12 +51,6 @@ interface EventDetails {
   is_members_only: boolean;
 }
 
-import { useEvent } from '../../hooks/useEvents';
-
-/* 
-  ------------------------------------------------------------------
-  TEST DATA: Dummy event details for Event Details Screen (Commented out)
-  ------------------------------------------------------------------
 const DUMMY_EVENT_DETAILS: Record<string, EventDetails> = {
   '1': {
     event_id: '1',
@@ -109,11 +103,11 @@ const DUMMY_EVENT_DETAILS: Record<string, EventDetails> = {
     is_members_only: false,
   }
 };
-*/
 
 export default function EventDetailsScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { data: event, isLoading, refetch } = useEvent(id || '');
+  const [event, setEvent] = useState<EventDetails | null>(DUMMY_EVENT_DETAILS[id || '1'] || DUMMY_EVENT_DETAILS['1']);
+  const [loading, setLoading] = useState(false);
   const [purchasing, setPurchasing] = useState(false);
   const [showCheckout, setShowCheckout] = useState(false);
   const [useFreeEntitlement, setUseFreeEntitlement] = useState(false);
@@ -121,13 +115,24 @@ export default function EventDetailsScreen() {
   const { membership } = useMembership();
 
   useEffect(() => {
-    if (event?.pricing?.is_eligible_for_free) {
-      setUseFreeEntitlement(true);
-    }
-  }, [event]);
+    fetchEvent();
+  }, [id]);
 
   const fetchEvent = async () => {
-    refetch();
+    setLoading(true);
+    try {
+      // Simulating API call
+      await new Promise(resolve => setTimeout(resolve, 800));
+      const dummyData = DUMMY_EVENT_DETAILS[id || '1'] || DUMMY_EVENT_DETAILS['1'];
+      setEvent(dummyData);
+      if (dummyData.pricing.is_eligible_for_free) {
+        setUseFreeEntitlement(true);
+      }
+    } catch (error) {
+      console.warn('Using dummy event details');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handlePurchase = async () => {
@@ -209,7 +214,7 @@ export default function EventDetailsScreen() {
     }, 3000);
   };
 
-  if (isLoading) {
+  if (loading) {
     return (
       <View className="flex-1 bg-white justify-center items-center">
         <ActivityIndicator size="large" color="#2E7D32" />

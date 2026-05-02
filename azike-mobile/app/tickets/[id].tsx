@@ -11,12 +11,6 @@ import ViewShot from 'react-native-view-shot';
 import { useRef } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { useTicket } from '../../hooks/useTickets';
-
-/* 
-  ------------------------------------------------------------------
-  TEST DATA: Dummy ticket details for Ticket Detail Screen (Commented out)
-  ------------------------------------------------------------------
 const DUMMY_TICKET_DETAILS: Record<string, any> = {
   '1': {
     ticket_id: '1',
@@ -47,28 +41,30 @@ const DUMMY_TICKET_DETAILS: Record<string, any> = {
     checked_in_at: '2024-05-28T20:15:00Z',
   }
 };
-*/
 
 export default function TicketDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { data: ticket, isLoading } = useTicket(id || '');
+  const [ticket, setTicket] = useState<any>(DUMMY_TICKET_DETAILS[id || '1'] || DUMMY_TICKET_DETAILS['1']);
+  const [loading, setLoading] = useState(false);
   const qrRef = useRef<ViewShot>(null);
 
-  if (isLoading) {
-    return (
-      <View className="flex-1 bg-white justify-center items-center">
-        <ActivityIndicator size="large" color="#2E7D32" />
-      </View>
-    );
-  }
+  useEffect(() => {
+    fetchTicket();
+  }, [id]);
 
-  if (!ticket) {
-    return (
-      <View className="flex-1 bg-white justify-center items-center">
-        <Text className="text-gray-500">Ticket not found</Text>
-      </View>
-    );
-  }
+  const fetchTicket = async () => {
+    setLoading(true);
+    try {
+      // Simulating API call
+      await new Promise(resolve => setTimeout(resolve, 800));
+      const dummyData = DUMMY_TICKET_DETAILS[id || '1'] || DUMMY_TICKET_DETAILS['1'];
+      setTicket(dummyData);
+    } catch (error) {
+      console.warn('Using dummy ticket details');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleShare = async () => {
     if (!qrRef.current?.capture) return;
@@ -83,6 +79,22 @@ export default function TicketDetailScreen() {
       Alert.alert('Error', 'Could not share ticket');
     }
   };
+
+  if (loading) {
+    return (
+      <View className="flex-1 bg-white justify-center items-center">
+        <ActivityIndicator size="large" color="#2E7D32" />
+      </View>
+    );
+  }
+
+  if (!ticket) {
+    return (
+      <View className="flex-1 bg-white justify-center items-center">
+        <Text className="text-gray-500">Ticket not found</Text>
+      </View>
+    );
+  }
 
   return (
     <ScrollView className="flex-1 bg-gray-50">

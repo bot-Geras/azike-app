@@ -17,12 +17,6 @@ interface Announcement {
   expires_at: string | null;
 }
 
-import { useQuery } from '@tanstack/react-query';
-
-/* 
-  ------------------------------------------------------------------
-  TEST DATA: Dummy announcement details for Announcement Detail Screen (Commented out)
-  ------------------------------------------------------------------
 const DUMMY_ANNOUNCEMENT_DETAILS: Record<string, Announcement> = {
   '1': {
     id: '1',
@@ -55,18 +49,29 @@ const DUMMY_ANNOUNCEMENT_DETAILS: Record<string, Announcement> = {
     expires_at: '2024-05-10T12:00:00Z',
   }
 };
-*/
 
 export default function AnnouncementDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { data: announcement, isLoading } = useQuery({
-    queryKey: ['announcement', id],
-    queryFn: async () => {
-      const response = await api.get('/announcements');
-      return response.data.data.announcements.find((a: any) => a.id === id);
-    },
-    enabled: !!id
-  });
+  const [announcement, setAnnouncement] = useState<Announcement | null>(DUMMY_ANNOUNCEMENT_DETAILS[id || '1'] || DUMMY_ANNOUNCEMENT_DETAILS['1']);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    fetchAnnouncement();
+  }, [id]);
+
+  const fetchAnnouncement = async () => {
+    setLoading(true);
+    try {
+      // Simulating API call
+      await new Promise(resolve => setTimeout(resolve, 800));
+      const found = DUMMY_ANNOUNCEMENT_DETAILS[id || '1'] || DUMMY_ANNOUNCEMENT_DETAILS['1'];
+      setAnnouncement(found);
+    } catch (error) {
+      console.error('Failed to fetch announcement:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const getAudienceLabel = (audience: string) => {
     const labels: Record<string, string> = {
@@ -78,7 +83,7 @@ export default function AnnouncementDetailScreen() {
     return labels[audience] || audience;
   };
 
-  if (isLoading) {
+  if (loading) {
     return (
       <View className="flex-1 bg-white justify-center items-center">
         <ActivityIndicator size="large" color="#2E7D32" />

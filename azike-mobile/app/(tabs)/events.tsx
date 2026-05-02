@@ -1,4 +1,5 @@
 
+
 import { useState, useEffect } from 'react';
 import { 
   View, 
@@ -14,7 +15,6 @@ import { api } from '../../services/api';
 import { useMembership } from '../../hooks/useMembership';
 import { CalendarIcon, MapPinIcon, UsersIcon } from 'react-native-heroicons/outline';
 import { format } from 'date-fns';
-import { useEvents } from '../../hooks/useEvents';
 
 interface Event {
   event_id: string;
@@ -38,10 +38,6 @@ interface Event {
   user_booking_status: string | null;
 }
 
-/* 
-  ------------------------------------------------------------------
-  TEST DATA: Dummy events for Events Screen (Commented out)
-  ------------------------------------------------------------------
 const DUMMY_EVENTS: Event[] = [
   {
     event_id: '1',
@@ -107,26 +103,48 @@ const DUMMY_EVENTS: Event[] = [
     user_booking_status: null,
   }
 ];
-*/
 
 export default function EventsScreen() {
+  const [events, setEvents] = useState<Event[]>(DUMMY_EVENTS);
+  const [loading, setLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const [selectedFilter, setSelectedFilter] = useState<'upcoming' | 'past'>('upcoming');
-  const { data: eventsData, isLoading, refetch, isRefetching } = useEvents(selectedFilter);
   const { membership } = useMembership();
 
-  const events = eventsData?.events || [];
-
-  const onRefresh = () => {
-    refetch();
+  const fetchEvents = async () => {
+    setLoading(true);
+    try {
+      // Simulating API call
+      await new Promise(resolve => setTimeout(resolve, 800));
+      if (selectedFilter === 'past') {
+        setEvents([]);
+      } else {
+        setEvents(DUMMY_EVENTS);
+      }
+    } catch (error) {
+      console.error('Failed to fetch events:', error);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
   };
 
-  if (isLoading && !isRefetching) {
-    return (
-      <View className="flex-1 bg-white justify-center items-center">
-        <ActivityIndicator size="large" color="#2E7D32" />
-      </View>
-    );
-  }
+  useEffect(() => {
+    fetchEvents();
+  }, [selectedFilter]);
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    fetchEvents();
+  };
+
+  // if (loading) {
+  //   return (
+  //     <View className="flex-1 bg-white justify-center items-center">
+  //       <ActivityIndicator size="large" color="#2E7D32" />
+  //     </View>
+  //   );
+  // }
 
   return (
     <View className="flex-1 bg-gray-50">
@@ -169,30 +187,15 @@ export default function EventsScreen() {
       <ScrollView
         className="flex-1 px-5 pt-4"
         refreshControl={
-          <RefreshControl refreshing={isRefetching} onRefresh={onRefresh} tintColor="#2E7D32" />
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
       >
         {events.length === 0 ? (
-          <View className="bg-white rounded-[32px] p-12 items-center border border-gray-100 shadow-sm mt-4">
-            <View className="w-20 h-20 bg-gray-50 rounded-full items-center justify-center mb-6">
-              <CalendarIcon size={40} color="#D1D5DB" />
-            </View>
-            <Text className="text-gray-900 font-bold text-xl text-center">
-              No {selectedFilter} events
+          <View className="bg-white rounded-xl p-8 items-center">
+            <CalendarIcon size={48} color="#9CA3AF" />
+            <Text className="text-gray-500 text-center mt-4">
+              No {selectedFilter} events found
             </Text>
-            <Text className="text-gray-500 text-sm text-center mt-3 leading-5">
-              {selectedFilter === 'upcoming' 
-                ? "We're currently planning new events. Stay tuned and check back soon!" 
-                : "You haven't attended any events in the past."}
-            </Text>
-            {selectedFilter === 'past' && (
-              <TouchableOpacity 
-                onPress={() => setSelectedFilter('upcoming')}
-                className="mt-6 bg-primary/10 px-6 py-3 rounded-full"
-              >
-                <Text className="text-primary font-bold">Browse Upcoming Events</Text>
-              </TouchableOpacity>
-            )}
           </View>
         ) : (
           <View className="space-y-4 pb-8">

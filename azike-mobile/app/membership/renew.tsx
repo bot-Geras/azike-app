@@ -23,10 +23,6 @@ interface RenewalPackage {
   benefits: string[];
 }
 
-/* 
-  ------------------------------------------------------------------
-  TEST DATA: Dummy packages for Membership Renewal (Commented out)
-  ------------------------------------------------------------------
 const DUMMY_PACKAGES: RenewalPackage[] = [
   {
     package_id: '1',
@@ -45,15 +41,14 @@ const DUMMY_PACKAGES: RenewalPackage[] = [
     benefits: ['Everything in Standard', '3 free event tickets', '70% discount on all events', 'Priority support'],
   }
 ];
-*/
 
 export default function RenewScreen() {
   const { membership } = useMembership();
-  const [packages, setPackages] = useState<RenewalPackage[]>([]);
-  const [selectedPackage, setSelectedPackage] = useState<string>('');
+  const [packages, setPackages] = useState<RenewalPackage[]>(DUMMY_PACKAGES);
+  const [selectedPackage, setSelectedPackage] = useState<string>(DUMMY_PACKAGES[1].package_id);
   const [phoneNumber, setPhoneNumber] = useState('');
   const [loading, setLoading] = useState(false);
-  const [loadingPackages, setLoadingPackages] = useState(true);
+  const [loadingPackages, setLoadingPackages] = useState(false);
   const [paymentStatus, setPaymentStatus] = useState<'idle' | 'processing' | 'success' | 'failed'>('idle');
   const [transactionId, setTransactionId] = useState<string | null>(null);
 
@@ -64,13 +59,14 @@ export default function RenewScreen() {
   const fetchRenewalOptions = async () => {
     setLoadingPackages(true);
     try {
-      const response = await api.get('/membership/renewal-options');
-      setPackages(response.data.data.packages);
-      if (response.data.data.packages.length > 0) {
-        setSelectedPackage(response.data.data.packages[0].package_id);
+      // Simulating API call
+      await new Promise(resolve => setTimeout(resolve, 800));
+      setPackages(DUMMY_PACKAGES);
+      if (DUMMY_PACKAGES.length > 0) {
+        setSelectedPackage(DUMMY_PACKAGES[1].package_id);
       }
     } catch (error) {
-      Alert.alert('Error', 'Failed to load renewal options');
+      console.warn('Using dummy renewal options');
     } finally {
       setLoadingPackages(false);
     }

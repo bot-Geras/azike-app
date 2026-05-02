@@ -1,4 +1,5 @@
 
+
 import { useState, useEffect } from 'react';
 import { 
   View, 
@@ -30,12 +31,6 @@ interface Ticket {
   purchased_at: string;
 }
 
-import { useTickets } from '../../hooks/useTickets';
-
-/* 
-  ------------------------------------------------------------------
-  TEST DATA: Dummy tickets for My Tickets Screen (Commented out)
-  ------------------------------------------------------------------
 const DUMMY_TICKETS: Ticket[] = [
   {
     ticket_id: '1',
@@ -68,19 +63,41 @@ const DUMMY_TICKETS: Ticket[] = [
     purchased_at: '2024-05-01T14:30:00Z',
   }
 ];
-*/
 
 export default function MyTicketsScreen() {
+  const [tickets, setTickets] = useState<Ticket[]>(DUMMY_TICKETS);
+  const [loading, setLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const [selectedFilter, setSelectedFilter] = useState<'upcoming' | 'past'>('upcoming');
-  const { data: ticketsData, isLoading, refetch, isRefetching } = useTickets(selectedFilter);
 
-  const tickets = ticketsData?.tickets || [];
-
-  const onRefresh = () => {
-    refetch();
+  const fetchTickets = async () => {
+    setLoading(true);
+    try {
+      // Simulating API call
+      await new Promise(resolve => setTimeout(resolve, 800));
+      if (selectedFilter === 'past') {
+        setTickets([DUMMY_TICKETS[1]]); // Show one past ticket for demo
+      } else {
+        setTickets([DUMMY_TICKETS[0]]); // Show one upcoming ticket for demo
+      }
+    } catch (error) {
+      console.error('Failed to fetch tickets:', error);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
   };
 
-  if (isLoading && !isRefetching) {
+  useEffect(() => {
+    fetchTickets();
+  }, [selectedFilter]);
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    fetchTickets();
+  };
+
+  if (loading) {
     return (
       <View className="flex-1 bg-white justify-center items-center">
         <ActivityIndicator size="large" color="#2E7D32" />
@@ -124,34 +141,19 @@ export default function MyTicketsScreen() {
       <ScrollView
         className="flex-1 px-5 pt-4"
         refreshControl={
-          <RefreshControl refreshing={isRefetching} onRefresh={onRefresh} tintColor="#2E7D32" />
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
       >
         {tickets.length === 0 ? (
-          <View className="bg-white rounded-[32px] p-12 items-center border border-gray-100 shadow-sm mt-4">
-            <View className="w-20 h-20 bg-gray-50 rounded-full items-center justify-center mb-6">
-              <TicketIcon size={40} color="#D1D5DB" />
-            </View>
-            <Text className="text-gray-900 font-bold text-xl text-center">
-              No {selectedFilter} tickets
+          <View className="bg-white rounded-xl p-8 items-center">
+            <TicketIcon size={48} color="#9CA3AF" />
+            <Text className="text-gray-500 text-center mt-4">
+              No {selectedFilter} tickets found
             </Text>
-            <Text className="text-gray-500 text-sm text-center mt-3 leading-5">
-              {selectedFilter === 'upcoming' 
-                ? "You don't have any active tickets at the moment. Browse events to find your next experience!" 
-                : "You don't have any past ticket history."}
-            </Text>
-            {selectedFilter === 'upcoming' && (
-              <TouchableOpacity 
-                onPress={() => router.push('/events')}
-                className="mt-6 bg-primary px-8 py-4 rounded-full shadow-md"
-              >
-                <Text className="text-white font-bold">Discover Events</Text>
-              </TouchableOpacity>
-            )}
           </View>
         ) : (
           <View className="space-y-4 pb-8">
-            {tickets.map((ticket: Ticket) => (
+            {tickets.map((ticket) => (
               <TouchableOpacity
                 key={ticket.ticket_id}
                 className="bg-white rounded-xl overflow-hidden shadow-sm"
