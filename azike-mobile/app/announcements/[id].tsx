@@ -17,26 +17,56 @@ interface Announcement {
   expires_at: string | null;
 }
 
+import { useQuery } from '@tanstack/react-query';
+
+/* 
+  ------------------------------------------------------------------
+  TEST DATA: Dummy announcement details for Announcement Detail Screen (Commented out)
+  ------------------------------------------------------------------
+const DUMMY_ANNOUNCEMENT_DETAILS: Record<string, Announcement> = {
+  '1': {
+    id: '1',
+    title: 'New Member Perks!',
+    body: 'We have partnered with local cafes and co-working spaces to give you exclusive discounts. Show your digital member card at any participating location to enjoy up to 15% off your bill. Participating locations include: The Hub Cafe, TechSpace, and Green Garden Restaurant. This offer is valid for all active premium members.',
+    image_url: 'https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=800&auto=format&fit=crop&q=60',
+    target_audience: 'members_only',
+    created_by: 'Community Manager',
+    created_at: '2024-05-01T09:00:00Z',
+    expires_at: '2024-12-31T23:59:59Z',
+  },
+  '2': {
+    id: '2',
+    title: 'App Maintenance Notice',
+    body: 'The Azike app will be undergoing brief maintenance this Sunday between 2 AM and 4 AM. Some features may be temporarily unavailable during this window. We apologize for any inconvenience caused. This maintenance is necessary to ensure the stability and security of our platform.',
+    image_url: null,
+    target_audience: 'all',
+    created_by: 'Tech Team',
+    created_at: '2024-05-02T14:30:00Z',
+    expires_at: '2024-05-05T00:00:00Z',
+  },
+  '3': {
+    id: '3',
+    title: 'Upcoming Networking Brunch',
+    body: 'Join us for our monthly networking brunch next Saturday. It is a great opportunity to meet fellow members, share ideas, and build lasting connections. We will have guest speakers from the tech and business sectors. Tickets are free for members, but registration is required.',
+    image_url: 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=800&auto=format&fit=crop&q=60',
+    target_audience: 'all',
+    created_by: 'Events Team',
+    created_at: '2024-04-28T11:00:00Z',
+    expires_at: '2024-05-10T12:00:00Z',
+  }
+};
+*/
+
 export default function AnnouncementDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const [announcement, setAnnouncement] = useState<Announcement | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetchAnnouncement();
-  }, [id]);
-
-  const fetchAnnouncement = async () => {
-    try {
+  const { data: announcement, isLoading } = useQuery({
+    queryKey: ['announcement', id],
+    queryFn: async () => {
       const response = await api.get('/announcements');
-      const found = response.data.data.announcements.find((a: Announcement) => a.id === id);
-      setAnnouncement(found || null);
-    } catch (error) {
-      console.error('Failed to fetch announcement:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+      return response.data.data.announcements.find((a: any) => a.id === id);
+    },
+    enabled: !!id
+  });
 
   const getAudienceLabel = (audience: string) => {
     const labels: Record<string, string> = {
@@ -48,7 +78,7 @@ export default function AnnouncementDetailScreen() {
     return labels[audience] || audience;
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <View className="flex-1 bg-white justify-center items-center">
         <ActivityIndicator size="large" color="#2E7D32" />

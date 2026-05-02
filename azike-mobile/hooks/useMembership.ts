@@ -3,6 +3,33 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '../services/api';
 import { useAuthStore } from '../stores/authStore';
 
+/* 
+  ------------------------------------------------------------------
+  TEST DATA: Dummy membership status for Global Use (Commented out)
+  ------------------------------------------------------------------
+const DUMMY_MEMBERSHIP = {
+  is_active: true,
+  membership_tier: 'Premium Member',
+  tier: 'Premium',
+  current_period: {
+    end_date: '2025-05-02T00:00:00Z',
+    days_remaining: 365,
+  },
+  digital_card: {
+    member_id: 'AZ-8829-102',
+    member_name: 'John Doe',
+    member_since: '2023-01-15T00:00:00Z',
+    expiry_date: '2025-05-02T00:00:00Z',
+    barcode_data: 'AZIKE-MEMBER-8829-102-JD',
+  },
+  entitlements: {
+    free_events_remaining: 3,
+    free_events_limit: 5,
+  },
+  auto_renew_enabled: true,
+};
+*/
+
 export const useMembership = () => {
   const { isAuthenticated } = useAuthStore();
   const queryClient = useQueryClient();

@@ -23,6 +23,30 @@ interface RenewalPackage {
   benefits: string[];
 }
 
+/* 
+  ------------------------------------------------------------------
+  TEST DATA: Dummy packages for Membership Renewal (Commented out)
+  ------------------------------------------------------------------
+const DUMMY_PACKAGES: RenewalPackage[] = [
+  {
+    package_id: '1',
+    name: 'Standard Monthly',
+    price: 1000,
+    currency: 'KES',
+    duration_days: 30,
+    benefits: ['Access to community events', 'Member-only announcements', 'Digital member card'],
+  },
+  {
+    package_id: '2',
+    name: 'Premium Annual',
+    price: 10000,
+    currency: 'KES',
+    duration_days: 365,
+    benefits: ['Everything in Standard', '3 free event tickets', '70% discount on all events', 'Priority support'],
+  }
+];
+*/
+
 export default function RenewScreen() {
   const { membership } = useMembership();
   const [packages, setPackages] = useState<RenewalPackage[]>([]);
@@ -38,6 +62,7 @@ export default function RenewScreen() {
   }, []);
 
   const fetchRenewalOptions = async () => {
+    setLoadingPackages(true);
     try {
       const response = await api.get('/membership/renewal-options');
       setPackages(response.data.data.packages);

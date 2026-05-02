@@ -61,11 +61,49 @@ export default function RootLayout() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
         <QueryClientProvider client={queryClient}>
-          <Stack>
+          <Stack
+            screenOptions={{
+              headerStyle: {
+                backgroundColor: '#2E7D32',
+              },
+              headerTintColor: '#fff',
+              headerTitleStyle: {
+                fontWeight: 'bold',
+              },
+              // headerBackTitleVisible: false,
+              
+            }}
+          >
             <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
             <Stack.Screen name="(auth)" options={{ headerShown: false }} />
             <Stack.Screen name="index" options={{ headerShown: false }} />
-            <Stack.Screen name="admin/scanner" options={{ headerShown: false }} />
+            <Stack.Screen name="notifications" options={{ title: 'Notifications' }} />
+            
+            {/* Events */}
+            <Stack.Screen name="events/[id]" options={{ title: 'Event Details',}} />
+            
+            {/* Tickets */}
+            <Stack.Screen name="tickets/[id]" options={{ title: 'Ticket Details', headerShown: false }} />
+            <Stack.Screen name="tickets/my-tickets" options={{ title: '', }} />
+            
+            {/* Announcements */}
+            <Stack.Screen name="announcements/index" options={{ title: 'Announcements' }} />
+            <Stack.Screen name="announcements/[id]" options={{ title: 'Announcement', headerTransparent: true, headerTitle: '' }} />
+            
+            {/* Membership */}
+            <Stack.Screen name="membership/renew" options={{ title: '' }} />
+            <Stack.Screen name="membership/settings" options={{ title: 'Membership Settings' }} />
+            
+            {/* Profile & Settings */}
+            <Stack.Screen name="profile/edit" options={{ title: 'Edit Profile' }} />
+            <Stack.Screen name="profile/notifications" options={{ title: 'Notification Settings' }} />
+            <Stack.Screen name="profile/payments" options={{ title: 'Payment Methods', }} />
+            <Stack.Screen name="profile/security" options={{ title: 'Security',  }} />
+            <Stack.Screen name="profile/support" options={{ title: '', }} />
+            <Stack.Screen name="profile/transactions" options={{ title: 'Transactions' }} />
+            
+            {/* Admin */}
+            <Stack.Screen name="admin/scanner" options={{ title: 'Ticket Scanner', headerShown: false }} />
           </Stack>
         </QueryClientProvider>
       </SafeAreaProvider>

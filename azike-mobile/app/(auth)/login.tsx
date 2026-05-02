@@ -3,7 +3,8 @@ import { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, KeyboardAvoidingView, Platform } from 'react-native';
 import { Link, router } from 'expo-router';
 import { useAuthStore } from '../../stores/authStore';
-
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { API_BASE_URL } from '@/services/api';
 export default function LoginScreen() {
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
@@ -11,6 +12,10 @@ export default function LoginScreen() {
   const [error, setError] = useState('');
   
   const { login } = useAuthStore();
+
+  console.log('API_BASE_URL', API_BASE_URL);
+  console.log( 'identifier', identifier)
+  console.log( 'password', password)
 
   const handleLogin = async () => {
     if (!identifier || !password) {
@@ -22,9 +27,11 @@ export default function LoginScreen() {
     setError('');
 
     try {
+      console.log(`[Login] Attempting sign-in for: ${identifier} at ${process.env.EXPO_PUBLIC_API_URL}`);
       await login(identifier, password);
       router.replace('/(tabs)');
     } catch (err: any) {
+      console.error('[Login Error]', err);
       setError(err.message || 'Login failed');
     } finally {
       setLoading(false);
@@ -36,7 +43,8 @@ export default function LoginScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       className="flex-1 bg-white"
     >
-      <View className="flex-1 justify-center px-6">
+     <SafeAreaView className="flex-1">
+       <View className="flex-1 justify-center px-6">
         <View className="items-center mb-10">
           <View className="w-20 h-20 bg-primary rounded-full items-center justify-center mb-4">
             <Text className="text-white text-3xl font-bold">A</Text>
@@ -101,6 +109,7 @@ export default function LoginScreen() {
           </Link>
         </View>
       </View>
+    </SafeAreaView>
     </KeyboardAvoidingView>
   );
 }

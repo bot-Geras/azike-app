@@ -9,44 +9,52 @@ import { format } from 'date-fns';
 import * as Sharing from 'expo-sharing';
 import ViewShot from 'react-native-view-shot';
 import { useRef } from 'react';
+import { SafeAreaView } from 'react-native-safe-area-context';
+
+import { useTicket } from '../../hooks/useTickets';
+
+/* 
+  ------------------------------------------------------------------
+  TEST DATA: Dummy ticket details for Ticket Detail Screen (Commented out)
+  ------------------------------------------------------------------
+const DUMMY_TICKET_DETAILS: Record<string, any> = {
+  '1': {
+    ticket_id: '1',
+    ticket_number: 'AZK-2024-001',
+    event: {
+      id: '2',
+      title: 'Annual Charity Gala',
+      start_datetime: '2024-06-02T19:30:00Z',
+      location: 'Grand Ballroom, Nairobi',
+    },
+    ticket_type: 'member_early_bird',
+    qr_code_data: 'TICKET-AZK-2024-001-GALA',
+    is_checked_in: false,
+    checked_in_at: null,
+  },
+  '2': {
+    ticket_id: '2',
+    ticket_number: 'AZK-2024-045',
+    event: {
+      id: '5',
+      title: 'Jazz Night under the Stars',
+      start_datetime: '2024-05-28T20:00:00Z',
+      location: 'Riverside Gardens',
+    },
+    ticket_type: 'regular',
+    qr_code_data: 'TICKET-AZK-2024-045-JAZZ',
+    is_checked_in: true,
+    checked_in_at: '2024-05-28T20:15:00Z',
+  }
+};
+*/
 
 export default function TicketDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const [ticket, setTicket] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+  const { data: ticket, isLoading } = useTicket(id || '');
   const qrRef = useRef<ViewShot>(null);
 
-  useEffect(() => {
-    fetchTicket();
-  }, [id]);
-
-  const fetchTicket = async () => {
-    try {
-      const response = await api.get(`/tickets/my`);
-      const foundTicket = response.data.data.tickets.find((t: any) => t.ticket_id === id);
-      setTicket(foundTicket);
-    } catch (error) {
-      Alert.alert('Error', 'Failed to load ticket');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleShare = async () => {
-    if (!qrRef.current?.capture) return;
-    
-    try {
-      const uri = await qrRef.current.capture?.();
-      if (!uri) return;
-      await Sharing.shareAsync(uri, {
-        dialogTitle: 'Share Ticket QR Code'
-      });
-    } catch (error) {
-      Alert.alert('Error', 'Could not share ticket');
-    }
-  };
-
-  if (loading) {
+  if (isLoading) {
     return (
       <View className="flex-1 bg-white justify-center items-center">
         <ActivityIndicator size="large" color="#2E7D32" />
@@ -62,9 +70,24 @@ export default function TicketDetailScreen() {
     );
   }
 
+  const handleShare = async () => {
+    if (!qrRef.current?.capture) return;
+    
+    try {
+      const uri = await qrRef.current.capture?.();
+      if (!uri) return;
+      await Sharing.shareAsync(uri, {
+        dialogTitle: 'Share Ticket QR Code'
+      });
+    } catch (error) {
+      Alert.alert('Error', 'Could not share ticket');
+    }
+  };
+
   return (
     <ScrollView className="flex-1 bg-gray-50">
-      <View className="p-5">
+     <SafeAreaView className='flex-1'>
+       <View className="p-5">
         <ViewShot ref={qrRef} options={{ format: 'png', quality: 0.9 }}>
           <View className="bg-white rounded-2xl overflow-hidden shadow-lg">
             <View className="bg-primary p-5">
@@ -140,6 +163,7 @@ export default function TicketDetailScreen() {
           </View>
         )}
       </View>
+     </SafeAreaView>
     </ScrollView>
   );
 }

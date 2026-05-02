@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import { Link, router } from 'expo-router';
 import { useAuth } from '../../hooks/useAuth';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function RegisterScreen() {
   const [form, setForm] = useState({
@@ -77,6 +78,7 @@ export default function RegisterScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       className="flex-1 bg-white"
     >
+      <SafeAreaView className="flex-1">
       <ScrollView 
         className="flex-1 px-6"
         contentContainerStyle={{ paddingVertical: 40 }}
@@ -91,7 +93,7 @@ export default function RegisterScreen() {
         </View>
 
         <View className="space-y-4">
-          <View className="flex-row space-x-3">
+          <View className="flex-row space-x-2">
             <View className="flex-1">
               <Text className="text-gray-700 mb-1">First Name</Text>
               <TextInput
@@ -175,7 +177,7 @@ export default function RegisterScreen() {
             )}
           </View>
 
-          <View>
+          <View className='mb-4'>
             <Text className="text-gray-700 mb-1">Confirm Password</Text>
             <TextInput
               className={`border rounded-lg px-4 py-3 text-base ${
@@ -192,7 +194,7 @@ export default function RegisterScreen() {
           </View>
 
           <TouchableOpacity
-            className="bg-primary rounded-lg py-4 mt-6"
+            className="bg-primary rounded-lg py-4 mt-8"
             onPress={handleRegister}
             disabled={loading}
           >
@@ -219,6 +221,8 @@ export default function RegisterScreen() {
           </Link>
         </View>
       </ScrollView>
+      </SafeAreaView>
+
     </KeyboardAvoidingView>
   );
 }

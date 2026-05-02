@@ -14,6 +14,7 @@ import { api } from '../../services/api';
 import { useMembership } from '../../hooks/useMembership';
 import { CalendarIcon, MapPinIcon, UsersIcon } from 'react-native-heroicons/outline';
 import { format } from 'date-fns';
+import { useEvents } from '../../hooks/useEvents';
 
 interface Event {
   event_id: string;
@@ -37,37 +38,89 @@ interface Event {
   user_booking_status: string | null;
 }
 
+/* 
+  ------------------------------------------------------------------
+  TEST DATA: Dummy events for Events Screen (Commented out)
+  ------------------------------------------------------------------
+const DUMMY_EVENTS: Event[] = [
+  {
+    event_id: '1',
+    title: 'Community Tech Meetup',
+    description: 'Join us for an evening of networking and tech talks from industry leaders.',
+    location: 'Azike Hub, Main Hall',
+    start_datetime: '2024-05-15T18:00:00Z',
+    banner_image_url: 'https://images.unsplash.com/photo-1540575861501-7cf05a4b125a?w=800&auto=format&fit=crop&q=60',
+    pricing: {
+      member_price: 0,
+      non_member_price: 500,
+      your_price: 0,
+      is_eligible_for_free: true,
+      discount_applied: true,
+    },
+    capacity: {
+      is_available: true,
+      spots_remaining: 15,
+    },
+    is_members_only: true,
+    user_booking_status: null,
+  },
+  {
+    event_id: '2',
+    title: 'Annual Charity Gala',
+    description: 'A night of elegance and giving. All proceeds go to local community projects.',
+    location: 'Grand Ballroom, Nairobi',
+    start_datetime: '2024-06-02T19:30:00Z',
+    banner_image_url: 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=800&auto=format&fit=crop&q=60',
+    pricing: {
+      member_price: 1500,
+      non_member_price: 3000,
+      your_price: 1500,
+      is_eligible_for_free: false,
+      discount_applied: true,
+    },
+    capacity: {
+      is_available: true,
+      spots_remaining: 45,
+    },
+    is_members_only: false,
+    user_booking_status: 'booked',
+  },
+  {
+    event_id: '3',
+    title: 'Morning Yoga Session',
+    description: 'Start your day with a refreshing yoga session in the park.',
+    location: 'City Park Gardens',
+    start_datetime: '2024-05-20T07:00:00Z',
+    banner_image_url: 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=800&auto=format&fit=crop&q=60',
+    pricing: {
+      member_price: 200,
+      non_member_price: 500,
+      your_price: 200,
+      is_eligible_for_free: false,
+      discount_applied: true,
+    },
+    capacity: {
+      is_available: true,
+      spots_remaining: 8,
+    },
+    is_members_only: false,
+    user_booking_status: null,
+  }
+];
+*/
+
 export default function EventsScreen() {
-  const [events, setEvents] = useState<Event[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
   const [selectedFilter, setSelectedFilter] = useState<'upcoming' | 'past'>('upcoming');
+  const { data: eventsData, isLoading, refetch, isRefetching } = useEvents(selectedFilter);
   const { membership } = useMembership();
 
-  const fetchEvents = async () => {
-    try {
-      const response = await api.get('/events', {
-        params: { status: selectedFilter }
-      });
-      setEvents(response.data.data.events);
-    } catch (error) {
-      console.error('Failed to fetch events:', error);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchEvents();
-  }, [selectedFilter]);
+  const events = eventsData?.events || [];
 
   const onRefresh = () => {
-    setRefreshing(true);
-    fetchEvents();
+    refetch();
   };
 
-  if (loading) {
+  if (isLoading && !isRefetching) {
     return (
       <View className="flex-1 bg-white justify-center items-center">
         <ActivityIndicator size="large" color="#2E7D32" />
@@ -116,15 +169,30 @@ export default function EventsScreen() {
       <ScrollView
         className="flex-1 px-5 pt-4"
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          <RefreshControl refreshing={isRefetching} onRefresh={onRefresh} tintColor="#2E7D32" />
         }
       >
         {events.length === 0 ? (
-          <View className="bg-white rounded-xl p-8 items-center">
-            <CalendarIcon size={48} color="#9CA3AF" />
-            <Text className="text-gray-500 text-center mt-4">
-              No {selectedFilter} events found
+          <View className="bg-white rounded-[32px] p-12 items-center border border-gray-100 shadow-sm mt-4">
+            <View className="w-20 h-20 bg-gray-50 rounded-full items-center justify-center mb-6">
+              <CalendarIcon size={40} color="#D1D5DB" />
+            </View>
+            <Text className="text-gray-900 font-bold text-xl text-center">
+              No {selectedFilter} events
             </Text>
+            <Text className="text-gray-500 text-sm text-center mt-3 leading-5">
+              {selectedFilter === 'upcoming' 
+                ? "We're currently planning new events. Stay tuned and check back soon!" 
+                : "You haven't attended any events in the past."}
+            </Text>
+            {selectedFilter === 'past' && (
+              <TouchableOpacity 
+                onPress={() => setSelectedFilter('upcoming')}
+                className="mt-6 bg-primary/10 px-6 py-3 rounded-full"
+              >
+                <Text className="text-primary font-bold">Browse Upcoming Events</Text>
+              </TouchableOpacity>
+            )}
           </View>
         ) : (
           <View className="space-y-4 pb-8">

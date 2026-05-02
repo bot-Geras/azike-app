@@ -5,14 +5,14 @@ import morgan from "morgan"
 import compression from "compression"
 import { initializeCronJobs } from "./jobs/scheduled-jobs"
 import mainRoute from './routes/index'
-
+import { PORT } from "./config/env"
 
 const app = express()
-const PORT = process.env.PORT || 3000
+const port = PORT || 3000
 
 
 app.use(helmet())
-app.use(cors({ origin: ['http://localhost:3000', 'http://localhost:8081'],
+app.use(cors({ origin: '*',
   credentials: true}));
 app.use(compression());
 app.use(morgan('dev'));
@@ -60,15 +60,31 @@ app.use((err: any, req: Request, res: Response, next: NextFunction) => {
 initializeCronJobs();
 
 
-app.listen(PORT, () => {
-    console.log(`
+import os from "os";
+
+const getLocalIP = () => {
+  const interfaces = os.networkInterfaces();
+  for (const name of Object.keys(interfaces)) {
+    for (const iface of interfaces[name]!) {
+      if (iface.family === 'IPv4' && !iface.internal) {
+        return iface.address;
+      }
+    }
+  }
+  return 'localhost';
+};
+
+app.listen(port, '0.0.0.0', () => {
+  const localIP = getLocalIP();
+  console.log(`
 ╔══════════════════════════════════════════════════════════════╗
 ║                                                              ║
 ║   🚀 AZIKE Community API is running!                         ║
 ║                                                              ║
-║   📍 Local:            http://localhost:${PORT}                 ║
-║   📊 Health check:     http://localhost:${PORT}/health          ║
-║   📝 API Base:         http://localhost:${PORT}/v1              ║
+║   📍 Local:            http://localhost:${port}                 ║
+║   🌐 Network:          http://${localIP}:${port}             ║
+║   📊 Health check:     http://${localIP}:${port}/health      ║
+║   📝 API Base:         http://${localIP}:${port}/v1          ║
 ║                                                              ║
 ║   📋 Available Routes:                                        ║
 ║      POST   /v1/auth/register                                ║

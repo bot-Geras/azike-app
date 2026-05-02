@@ -9,9 +9,9 @@ export default function TabLayout() {
 
   if (!isHydrated) return null;
 
-  if (!isAuthenticated) {
-    return <Redirect href="/(auth)/login" />;
-  }
+  // if (!isAuthenticated) {
+  //   return <Redirect href="/(auth)/login" />;
+  // }
 
   return (
     <Tabs

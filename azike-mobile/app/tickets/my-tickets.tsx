@@ -30,36 +30,57 @@ interface Ticket {
   purchased_at: string;
 }
 
+import { useTickets } from '../../hooks/useTickets';
+
+/* 
+  ------------------------------------------------------------------
+  TEST DATA: Dummy tickets for My Tickets Screen (Commented out)
+  ------------------------------------------------------------------
+const DUMMY_TICKETS: Ticket[] = [
+  {
+    ticket_id: '1',
+    ticket_number: 'AZK-2024-001',
+    event: {
+      id: '2',
+      title: 'Annual Charity Gala',
+      start_datetime: '2024-06-02T19:30:00Z',
+      location: 'Grand Ballroom, Nairobi',
+      banner_image_url: 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=800&auto=format&fit=crop&q=60',
+    },
+    ticket_type: 'member_early_bird',
+    price_paid: 1500,
+    is_checked_in: false,
+    purchased_at: '2024-04-10T10:00:00Z',
+  },
+  {
+    ticket_id: '2',
+    ticket_number: 'AZK-2024-045',
+    event: {
+      id: '5',
+      title: 'Jazz Night under the Stars',
+      start_datetime: '2024-05-28T20:00:00Z',
+      location: 'Riverside Gardens',
+      banner_image_url: 'https://images.unsplash.com/photo-1514525253361-bee8718a7439?w=800&auto=format&fit=crop&q=60',
+    },
+    ticket_type: 'regular',
+    price_paid: 1000,
+    is_checked_in: true,
+    purchased_at: '2024-05-01T14:30:00Z',
+  }
+];
+*/
+
 export default function MyTicketsScreen() {
-  const [tickets, setTickets] = useState<Ticket[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
   const [selectedFilter, setSelectedFilter] = useState<'upcoming' | 'past'>('upcoming');
+  const { data: ticketsData, isLoading, refetch, isRefetching } = useTickets(selectedFilter);
 
-  const fetchTickets = async () => {
-    try {
-      const response = await api.get('/tickets/my', {
-        params: { status: selectedFilter }
-      });
-      setTickets(response.data.data.tickets);
-    } catch (error) {
-      console.error('Failed to fetch tickets:', error);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchTickets();
-  }, [selectedFilter]);
+  const tickets = ticketsData?.tickets || [];
 
   const onRefresh = () => {
-    setRefreshing(true);
-    fetchTickets();
+    refetch();
   };
 
-  if (loading) {
+  if (isLoading && !isRefetching) {
     return (
       <View className="flex-1 bg-white justify-center items-center">
         <ActivityIndicator size="large" color="#2E7D32" />
@@ -103,19 +124,34 @@ export default function MyTicketsScreen() {
       <ScrollView
         className="flex-1 px-5 pt-4"
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          <RefreshControl refreshing={isRefetching} onRefresh={onRefresh} tintColor="#2E7D32" />
         }
       >
         {tickets.length === 0 ? (
-          <View className="bg-white rounded-xl p-8 items-center">
-            <TicketIcon size={48} color="#9CA3AF" />
-            <Text className="text-gray-500 text-center mt-4">
-              No {selectedFilter} tickets found
+          <View className="bg-white rounded-[32px] p-12 items-center border border-gray-100 shadow-sm mt-4">
+            <View className="w-20 h-20 bg-gray-50 rounded-full items-center justify-center mb-6">
+              <TicketIcon size={40} color="#D1D5DB" />
+            </View>
+            <Text className="text-gray-900 font-bold text-xl text-center">
+              No {selectedFilter} tickets
             </Text>
+            <Text className="text-gray-500 text-sm text-center mt-3 leading-5">
+              {selectedFilter === 'upcoming' 
+                ? "You don't have any active tickets at the moment. Browse events to find your next experience!" 
+                : "You don't have any past ticket history."}
+            </Text>
+            {selectedFilter === 'upcoming' && (
+              <TouchableOpacity 
+                onPress={() => router.push('/events')}
+                className="mt-6 bg-primary px-8 py-4 rounded-full shadow-md"
+              >
+                <Text className="text-white font-bold">Discover Events</Text>
+              </TouchableOpacity>
+            )}
           </View>
         ) : (
           <View className="space-y-4 pb-8">
-            {tickets.map((ticket) => (
+            {tickets.map((ticket: Ticket) => (
               <TouchableOpacity
                 key={ticket.ticket_id}
                 className="bg-white rounded-xl overflow-hidden shadow-sm"
