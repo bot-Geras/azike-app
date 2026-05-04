@@ -13,9 +13,9 @@ export default function LoginScreen() {
   
   const { login } = useAuthStore();
 
-  console.log('API_BASE_URL', API_BASE_URL);
-  console.log( 'identifier', identifier)
-  console.log( 'password', password)
+  // console.log('API_BASE_URL', API_BASE_URL);
+  // console.log( 'identifier', identifier)
+  // console.log( 'password', password)
 
   const handleLogin = async () => {
     if (!identifier || !password) {
@@ -27,7 +27,7 @@ export default function LoginScreen() {
     setError('');
 
     try {
-      console.log(`[Login] Attempting sign-in for: ${identifier} at ${process.env.EXPO_PUBLIC_API_URL}`);
+      // console.log(`[Login] Attempting sign-in for: ${identifier} at ${process.env.EXPO_PUBLIC_API_URL}`);
       await login(identifier, password);
       router.replace('/(tabs)');
     } catch (err: any) {

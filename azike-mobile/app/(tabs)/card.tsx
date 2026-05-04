@@ -2,7 +2,7 @@
 import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
 import { useMembership } from '../../hooks/useMembership';
 import { router } from 'expo-router';
-import Barcode from 'react-native-barcode-builder';
+// import Barcode from 'react-native-barcode-builder';
 import { ShareIcon, QrCodeIcon, ArrowPathIcon } from 'react-native-heroicons/outline';
 import * as Sharing from 'expo-sharing';
 import ViewShot from 'react-native-view-shot';
@@ -86,14 +86,14 @@ export default function MembershipCardScreen() {
 
             {/* Barcode */}
             <View className="bg-white rounded-xl p-4 items-center">
-              <Barcode 
+              {/* <Barcode 
                 value={card?.barcode_data || membership?.digital_card?.barcode_data || ''} 
                 format="CODE128"
                 width={1.5}
                 height={70}
                 background="white"
                 lineColor="#1B5E20"
-              />
+              /> */}
               <Text className="text-gray-500 text-xs mt-2 font-mono">
                 {(card?.barcode_data || membership?.digital_card?.barcode_data || '').slice(0, 30)}...
               </Text>
