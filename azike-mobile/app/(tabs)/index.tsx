@@ -156,9 +156,9 @@ export default function HomeScreen() {
                   <View className="flex-row justify-between items-start">
                     <View>
                       <View className="flex-row items-center mb-1">
-                        <SparklesIcon size={16} color="#2E7D32" />
+                        {membership?.is_active && <SparklesIcon size={16} color="#2E7D32" />}
                         <Text className="text-primary font-bold text-xs ml-1 uppercase tracking-wider">
-                          {membership?.membership_tier || 'Premium Member'}
+                          {membership?.membership_tier ? `${membership.membership_tier} Member` : 'Standard Member'}
                         </Text>
                       </View>
                       <Text className="text-gray-900 text-xl font-bold">
@@ -269,7 +269,11 @@ export default function HomeScreen() {
                     <Image source={{ uri: event.banner_image_url }} className="w-full h-40" />
                   ) : (
                     <View className="w-full h-40 bg-primary/10 items-center justify-center">
-                      <CalendarIcon size={40} color="#2E7D32" />
+                      <Image
+          source={{ uri: 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=800&auto=format&fit=crop&q=60' }}
+        className="w-full h-44"
+          // resizeMode="cover"
+        />
                     </View>
                   )}
                   <View className="absolute top-3 left-3 bg-white/90 px-3 py-1 rounded-full">
@@ -284,7 +288,9 @@ export default function HomeScreen() {
                     <View className="flex-row items-center mb-1">
                       <CalendarIcon size={14} color="#6B7280" />
                       <Text className="text-gray-500 text-xs ml-1.5">
-                        {new Date(event.start_datetime).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                        {event.start_datetime && !isNaN(new Date(event.start_datetime).getTime()) 
+                          ? new Date(event.start_datetime).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+                          : 'TBA'}
                       </Text>
                     </View>
                     <View className="flex-row items-center">
@@ -346,7 +352,9 @@ export default function HomeScreen() {
                     <View className="flex-row justify-between items-center mb-1">
                       <Text className="text-gray-900 font-bold text-base" numberOfLines={1}>{news.title}</Text>
                       <Text className="text-gray-400 text-[10px] font-medium uppercase tracking-tighter">
-                        {new Date(news.created_at).toLocaleDateString()}
+                        {news.created_at && !isNaN(new Date(news.created_at).getTime())
+                          ? new Date(news.created_at).toLocaleDateString()
+                          : ''}
                       </Text>
                     </View>
                     <Text className="text-gray-500 text-sm leading-5" numberOfLines={2}>

@@ -1,26 +1,35 @@
-
+// mobile/app/(tabs)/card.tsx
 import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
 import { useMembership } from '../../hooks/useMembership';
-import { router } from 'expo-router';
-import Barcode from 'react-native-barcode-builder';
+import { router, Stack } from 'expo-router';
 import { ShareIcon, QrCodeIcon, ArrowPathIcon } from 'react-native-heroicons/outline';
 import * as Sharing from 'expo-sharing';
 import ViewShot from 'react-native-view-shot';
 import { useRef } from 'react';
 
+// Import the barcode library
+import Barcode from 'react-native-barcode-qr-generator';
+import { SafeAreaView } from 'react-native-safe-area-context';
+
 export default function MembershipCardScreen() {
-  const { membership, card, isLoading, refetch } = useMembership();
+  const { membership, isLoading, refetch } = useMembership();
   const cardRef = useRef<ViewShot>(null);
+
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return '---';
+    const date = new Date(dateString);
+    return isNaN(date.getTime()) ? '---' : date.toLocaleDateString();
+  };
+
+  const barcodeValue = membership?.digital_card?.barcode_data || '';
+  const hasValidBarcode = barcodeValue.length > 0;
 
   const handleShare = async () => {
     if (!cardRef.current?.capture) return;
-    
     try {
-      const uri = await cardRef.current.capture?.();
+      const uri = await cardRef.current.capture();
       if (!uri) return;
-      await Sharing.shareAsync(uri, {
-        dialogTitle: 'Share Membership Card'
-      });
+      await Sharing.shareAsync(uri, { dialogTitle: 'Share Membership Card' });
     } catch (error) {
       Alert.alert('Error', 'Could not share membership card');
     }
@@ -40,13 +49,11 @@ export default function MembershipCardScreen() {
         <View className="w-20 h-20 bg-gray-200 rounded-full items-center justify-center mb-4">
           <QrCodeIcon size={40} color="#9CA3AF" />
         </View>
-        <Text className="text-xl font-semibold text-gray-800 mb-2">
-          Membership Expired
-        </Text>
+        <Text className="text-xl font-semibold text-gray-800 mb-2">Membership Expired</Text>
         <Text className="text-gray-500 text-center mb-6">
           Your membership has expired. Renew to access your digital card and member benefits.
         </Text>
-        <TouchableOpacity 
+        <TouchableOpacity
           className="bg-primary px-6 py-3 rounded-lg"
           onPress={() => router.push('/membership/renew')}
         >
@@ -58,110 +65,116 @@ export default function MembershipCardScreen() {
 
   return (
     <ScrollView className="flex-1 bg-gray-50">
-      <View className="p-5">
+      {/* <Stack initialRouteName={membership?.digital_card?.member_id} /> */}
+      <SafeAreaView className="flex-1 p-5">
         <ViewShot ref={cardRef} options={{ format: 'png', quality: 0.9 }}>
-          <View className="bg-gradient-to-br from-primary to-primary/80 rounded-2xl p-6">
+          <View style={{ backgroundColor: '#2E7D32', borderRadius: 16, padding: 24 }}>
             {/* Card Header */}
-            <View className="flex-row justify-between items-center mb-6">
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
               <View>
-                <Text className="text-white/80 text-sm">AZIKE Member</Text>
-                <Text className="text-white text-2xl font-bold">
-                  {card?.member_name || membership?.digital_card?.member_name}
+                <Text style={{ color: 'rgba(255,255,255,0.8)', fontSize: 14 }}>AZIKE Member</Text>
+                <Text style={{ color: 'white', fontSize: 24, fontWeight: 'bold' }}>
+                  {membership?.digital_card?.member_name || 'Member'}
                 </Text>
               </View>
-              <View className="bg-white/20 px-3 py-1 rounded-full">
-                <Text className="text-white text-xs font-medium uppercase">
-                  {card?.tier || membership?.membership_tier}
+              <View style={{ backgroundColor: 'rgba(255,255,255,0.2)', paddingHorizontal: 12, paddingVertical: 4, borderRadius: 999 }}>
+                <Text style={{ color: 'white', fontSize: 12, fontWeight: '600', textTransform: 'uppercase' }}>
+                  {membership?.membership_tier || 'standard'}
                 </Text>
               </View>
             </View>
 
             {/* Member ID */}
-            <View className="mb-6">
-              <Text className="text-white/60 text-xs mb-1">Member ID</Text>
-              <Text className="text-white text-lg font-mono tracking-wider">
-                {card?.member_id || membership?.digital_card?.member_id}
+            <View style={{ marginBottom: 24 }}>
+              <Text style={{ color: 'rgba(255,255,255,0.6)', fontSize: 12, marginBottom: 4 }}>Member ID</Text>
+              <Text style={{ color: 'white', fontSize: 18, fontFamily: 'monospace', letterSpacing: 2 }}>
+                {membership?.digital_card?.member_id || '---'}
               </Text>
             </View>
 
             {/* Barcode */}
-            <View className="bg-white rounded-xl p-4 items-center">
-              <Barcode 
-                value={card?.barcode_data || membership?.digital_card?.barcode_data || ''} 
-                format="CODE128"
-                width={1.5}
-                height={70}
-                background="white"
-                lineColor="#1B5E20"
-              />
-              <Text className="text-gray-500 text-xs mt-2 font-mono">
-                {(card?.barcode_data || membership?.digital_card?.barcode_data || '').slice(0, 30)}...
-              </Text>
-            </View>
+            <View className="bg-white rounded-xl p-4 items-center min-h-[110px] justify-center">
+  {hasValidBarcode ? (
+    <View className="items-center w-full">
+      <Barcode
+        value={barcodeValue}
+        type="barcode"
+        format="CODE128"
+        maxWidth={260}
+        height={70}
+        lineColor="#1B5E20"
+        background="#ffffff"
+        text={barcodeValue.slice(0, 30)}
+        textStyle={{
+          fontSize: 10,
+          color: '#6B7280',
+          marginTop: 8,
+          fontFamily: 'monospace',
+        }}
+      />
+    </View>
+  ) : (
+    <View className="h-[70px] justify-center">
+      <ActivityIndicator size="small" color="#2E7D32" />
+    </View>
+  )}
+</View>
 
             {/* Expiry Info */}
-            <View className="flex-row justify-between mt-6">
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 24 }}>
               <View>
-                <Text className="text-white/60 text-xs">Member Since</Text>
-                <Text className="text-white text-base">
-                  {new Date(card?.member_since || membership?.digital_card?.member_since || '').toLocaleDateString()}
+                <Text style={{ color: 'rgba(255,255,255,0.6)', fontSize: 12 }}>Member Since</Text>
+                <Text style={{ color: 'white', fontSize: 16 }}>
+                  {formatDate(membership?.digital_card?.member_since)}
                 </Text>
               </View>
               <View>
-                <Text className="text-white/60 text-xs">Expires</Text>
-                <Text className="text-white text-base">
-                  {new Date(card?.expiry_date || membership?.digital_card?.expiry_date || '').toLocaleDateString()}
+                <Text style={{ color: 'rgba(255,255,255,0.6)', fontSize: 12 }}>Expires</Text>
+                <Text style={{ color: 'white', fontSize: 16 }}>
+                  {formatDate(membership?.current_period?.end_date)}
                 </Text>
               </View>
             </View>
 
             {/* Status Badge */}
-            <View className="absolute top-4 right-4">
-              <View className="bg-success/20 px-2 py-1 rounded-full">
-                <Text className="text-white text-xs">● Active</Text>
+            <View style={{ position: 'absolute', top: 16, right: 16 }}>
+              <View style={{ backgroundColor: 'rgba(76,175,80,0.2)', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 999 }}>
+                <Text style={{ color: 'white', fontSize: 12 }}>● Active</Text>
               </View>
             </View>
           </View>
         </ViewShot>
 
         {/* Actions */}
-        <View className="flex-row justify-center space-x-4 mt-6">
-          <TouchableOpacity 
-            className="bg-white px-6 py-3 rounded-lg flex-row items-center shadow-sm"
+        <View style={{ flexDirection: 'row', justifyContent: 'center', gap: 16, marginTop: 24 }}>
+          <TouchableOpacity
+            style={{ backgroundColor: 'white', paddingHorizontal: 24, paddingVertical: 12, borderRadius: 12, flexDirection: 'row', alignItems: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 2, elevation: 2 }}
             onPress={handleShare}
           >
             <ShareIcon size={20} color="#2E7D32" />
-            <Text className="text-primary ml-2 font-medium">Share Card</Text>
+            <Text style={{ color: '#2E7D32', marginLeft: 8, fontWeight: '500' }}>Share Card</Text>
           </TouchableOpacity>
-          
-          <TouchableOpacity 
-            className="bg-white px-6 py-3 rounded-lg flex-row items-center shadow-sm"
+
+          <TouchableOpacity
+            style={{ backgroundColor: 'white', paddingHorizontal: 24, paddingVertical: 12, borderRadius: 12, flexDirection: 'row', alignItems: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 2, elevation: 2 }}
             onPress={() => refetch()}
           >
             <ArrowPathIcon size={20} color="#2E7D32" />
-            <Text className="text-primary ml-2 font-medium">Refresh</Text>
+            <Text style={{ color: '#2E7D32', marginLeft: 8, fontWeight: '500' }}>Refresh</Text>
           </TouchableOpacity>
         </View>
 
         {/* Benefits */}
-        <View className="mt-8">
-          <Text className="text-lg font-semibold text-gray-800 mb-4">
-            Your Benefits
-          </Text>
-          <View className="bg-white rounded-xl divide-y divide-gray-100">
-            <BenefitItem 
+        <View style={{ marginTop: 32 }}>
+          <Text style={{ fontSize: 18, fontWeight: '600', color: '#1F2937', marginBottom: 16 }}>Your Benefits</Text>
+          <View style={{ backgroundColor: 'white', borderRadius: 12, borderWidth: 1, borderColor: '#F3F4F6' }}>
+            <BenefitItem
               title="Free Events Remaining"
-              value={`${membership?.entitlements.free_events_remaining} of ${membership?.entitlements.free_events_limit}`}
+              value={`${membership?.entitlements?.free_events_remaining || 0} of ${membership?.entitlements?.free_events_limit || 1}`}
             />
-            <BenefitItem 
-              title="Member Discount"
-              value="Up to 70% off events"
-            />
-            <BenefitItem 
-              title="Exclusive Access"
-              value="Member-only events"
-            />
-            <BenefitItem 
+            <BenefitItem title="Member Discount" value="Up to 70% off events" />
+            <BenefitItem title="Exclusive Access" value="Member-only events" />
+            <BenefitItem
               title="Auto-Renewal"
               value={membership?.auto_renew_enabled ? 'Enabled' : 'Disabled'}
               action
@@ -169,7 +182,7 @@ export default function MembershipCardScreen() {
             />
           </View>
         </View>
-      </View>
+      </SafeAreaView>
     </ScrollView>
   );
 }
@@ -181,17 +194,15 @@ function BenefitItem({ title, value, action, onPress }: {
   onPress?: () => void;
 }) {
   return (
-    <TouchableOpacity 
-      className="flex-row justify-between items-center p-4"
+    <TouchableOpacity
+      style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 16, borderBottomWidth: 1, borderColor: '#F3F4F6' }}
       onPress={onPress}
       disabled={!action}
     >
-      <Text className="text-gray-700">{title}</Text>
-      <View className="flex-row items-center">
-        <Text className="text-gray-900 font-medium mr-2">{value}</Text>
-        {action && (
-          <Text className="text-primary text-xl">›</Text>
-        )}
+      <Text style={{ color: '#374151' }}>{title}</Text>
+      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+        <Text style={{ color: '#111827', fontWeight: '500', marginRight: 8 }}>{value}</Text>
+        {action && <Text style={{ color: '#2E7D32', fontSize: 20 }}>›</Text>}
       </View>
     </TouchableOpacity>
   );

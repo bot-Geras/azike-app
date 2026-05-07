@@ -9,14 +9,15 @@ export class EventsService {
     page?: number;
     userId?: string;
   }) {
-    const { status = 'published', limit = 20, page = 1, userId } = options;
-    const offset = (page - 1) * limit;
+    const { status = 'upcoming', limit = 20, page = 1, userId } = options;
+  const offset = (page - 1) * limit;
+
 
     const where: Prisma.eventsWhereInput = {
-      status: status as any,
-      ...(status === 'upcoming' ? { start_datetime: { gte: new Date() } } : {}),
-      ...(status === 'past' ? { end_datetime: { lt: new Date() } } : {})
-    };
+    status: 'published',
+    ...(status === 'upcoming' ? { start_datetime: { gte: new Date() } } : {}),
+    ...(status === 'past' ? { end_datetime: { lt: new Date() } } : {})
+  };
 
     const [events, totalCount] = await Promise.all([
       prisma.events.findMany({

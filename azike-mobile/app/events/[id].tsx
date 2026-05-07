@@ -1,5 +1,6 @@
 
 import { useState, useEffect } from 'react';
+import { useAuth } from '../../hooks/useAuth';
 import { 
   View, 
   Text, 
@@ -53,72 +54,18 @@ interface EventDetails {
 
 import { useEvent } from '../../hooks/useEvents';
 
-/* 
-  ------------------------------------------------------------------
-  TEST DATA: Dummy event details for Event Details Screen (Commented out)
-  ------------------------------------------------------------------
-const DUMMY_EVENT_DETAILS: Record<string, EventDetails> = {
-  '1': {
-    event_id: '1',
-    title: 'Community Tech Meetup',
-    description: 'Join us for an evening of networking and tech talks from industry leaders. We will discuss the latest in React Native, AI, and Fintech. Drinks and snacks will be provided.',
-    location: 'Azike Hub, Main Hall',
-    start_datetime: '2024-05-15T18:00:00Z',
-    end_datetime: '2024-05-15T21:00:00Z',
-    registration_deadline: '2024-05-14T23:59:59Z',
-    banner_image_url: 'https://images.unsplash.com/photo-1540575861501-7cf05a4b125a?w=800&auto=format&fit=crop&q=60',
-    pricing: {
-      member_price: 0,
-      non_member_price: 500,
-      your_price: 0,
-      is_eligible_for_free: true,
-      free_entitlements_remaining: 3,
-    },
-    capacity: {
-      max: 50,
-      current_bookings: 35,
-      is_available: true,
-      spots_remaining: 15,
-    },
-    user_booking_status: null,
-    is_members_only: true,
-  },
-  '2': {
-    event_id: '2',
-    title: 'Annual Charity Gala',
-    description: 'A night of elegance and giving. All proceeds go to local community projects. Dress code: Black Tie. Enjoy live music, dinner, and a silent auction.',
-    location: 'Grand Ballroom, Nairobi',
-    start_datetime: '2024-06-02T19:30:00Z',
-    end_datetime: '2024-06-02T23:30:00Z',
-    registration_deadline: '2024-05-30T12:00:00Z',
-    banner_image_url: 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=800&auto=format&fit=crop&q=60',
-    pricing: {
-      member_price: 1500,
-      non_member_price: 3000,
-      your_price: 1500,
-      is_eligible_for_free: false,
-      free_entitlements_remaining: 3,
-    },
-    capacity: {
-      max: 200,
-      current_bookings: 155,
-      is_available: true,
-      spots_remaining: 45,
-    },
-    user_booking_status: 'booked',
-    is_members_only: false,
-  }
-};
-*/
+
 
 export default function EventDetailsScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { data: event, isLoading, refetch } = useEvent(id || '');
+  const { membership } = useMembership();
+  const { user } = useAuth();
   const [purchasing, setPurchasing] = useState(false);
   const [showCheckout, setShowCheckout] = useState(false);
   const [useFreeEntitlement, setUseFreeEntitlement] = useState(false);
-  const [phoneNumber, setPhoneNumber] = useState('');
-  const { membership } = useMembership();
+  const [phoneNumber, setPhoneNumber] = useState(user?.phone_number || '');
+  
 
   useEffect(() => {
     if (event?.pricing?.is_eligible_for_free) {
@@ -133,11 +80,19 @@ export default function EventDetailsScreen() {
   const handlePurchase = async () => {
     if (!event) return;
 
+
+     if (!useFreeEntitlement && event.pricing.your_price! > 0) {
+      if (!phoneNumber || phoneNumber.trim() === '') {
+        Alert.alert('Phone Required', 'Please enter your M-Pesa phone number to proceed.');
+        return;
+      }
+    }
+
     setPurchasing(true);
     try {
       const response = await api.post(`/tickets/events/${id}/purchase`, {
         use_free_entitlement: useFreeEntitlement,
-        phone_number: phoneNumber || undefined
+       phone_number: phoneNumber || user?.phone_number
       });
 
       const data = response.data.data;
@@ -183,31 +138,69 @@ export default function EventDetailsScreen() {
     }
   };
 
+  // const startPaymentPolling = (txId: string) => {
+  //   let attempts = 0;
+  //   const pollInterval = setInterval(async () => {
+  //     try {
+  //       const response = await api.get(`/payments/transaction/${txId}/status`);
+  //       const { status } = response.data.data;
+
+  //       if (status === 'completed') {
+  //         clearInterval(pollInterval);
+  //         Alert.alert('Payment Successful!', 'Your ticket has been confirmed.');
+  //         fetchEvent();
+  //         router.push('/tickets/my-tickets');
+  //       } else if (status === 'failed') {
+  //         clearInterval(pollInterval);
+  //         Alert.alert('Payment Failed', 'Please try again.');
+  //       }
+
+  //       if (++attempts >= 20) {
+  //         clearInterval(pollInterval);
+  //       }
+  //     } catch (error) {
+  //       console.error('Polling error:', error);
+  //     }
+  //   }, 3000);
+  // };
+
   const startPaymentPolling = (txId: string) => {
-    let attempts = 0;
-    const pollInterval = setInterval(async () => {
-      try {
-        const response = await api.get(`/payments/transaction/${txId}/status`);
-        const { status } = response.data.data;
+  let attempts = 0;
+  const maxAttempts = 20; // 20 * 3 seconds = 60 seconds total
 
-        if (status === 'completed') {
-          clearInterval(pollInterval);
-          Alert.alert('Payment Successful!', 'Your ticket has been confirmed.');
-          fetchEvent();
-          router.push('/tickets/my-tickets');
-        } else if (status === 'failed') {
-          clearInterval(pollInterval);
-          Alert.alert('Payment Failed', 'Please try again.');
-        }
+  const pollInterval = setInterval(async () => {
+    attempts++; // Always increment, even on failure
 
-        if (++attempts >= 20) {
-          clearInterval(pollInterval);
-        }
-      } catch (error) {
-        console.error('Polling error:', error);
+    try {
+      const response = await api.get(`/payments/transaction/${txId}/status`);
+      const { status } = response.data.data;
+
+      if (status === 'completed') {
+        clearInterval(pollInterval);
+        Alert.alert('Payment Successful!', 'Your ticket has been confirmed.');
+        fetchEvent();
+        router.push('/tickets/my-tickets');
+        return;
+      } else if (status === 'failed') {
+        clearInterval(pollInterval);
+        Alert.alert('Payment Failed', 'Please try again.');
+        return;
       }
-    }, 3000);
-  };
+    } catch (error) {
+      console.error('Polling error:', error);
+      // Still continue, but the interval will stop after maxAttempts
+    }
+
+    // Stop after max attempts regardless of outcome
+    if (attempts >= maxAttempts) {
+      clearInterval(pollInterval);
+      Alert.alert(
+        'Payment Timeout',
+        'We could not confirm your payment. Please check your transaction history later.'
+      );
+    }
+  }, 3000);
+};
 
   if (isLoading) {
     return (
@@ -239,8 +232,12 @@ export default function EventDetailsScreen() {
             resizeMode="cover"
           />
         ) : (
-          <View className="w-full h-56 bg-primary/20 items-center justify-center">
-            <CalendarIcon size={64} color="#2E7D32" />
+          <View className="w-full  bg-primary/20 items-center justify-center">
+            <Image
+          source={{ uri: 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=800&auto=format&fit=crop&q=60' }}
+        className="w-full h-full"
+          // resizeMode="cover"
+        />
           </View>
         )}
 

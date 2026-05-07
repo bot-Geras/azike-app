@@ -33,6 +33,7 @@ export class TicketsController {
         });
       }
     } catch (error: any) {
+        console.error('PURCHASE ERROR:', error); 
       const errorMap: Record<string, { status: number; message: string; field: string }> = {
         EVENT_NOT_FOUND: { status: 404, message: 'Event not found', field: 'eventId' },
         EVENT_FULL: { status: 400, message: 'Event is full', field: 'event' },
@@ -42,6 +43,8 @@ export class TicketsController {
         MEMBER_REQUIRED_FOR_FREE: { status: 403, message: 'Active membership required for free tickets', field: 'membership' },
         NO_FREE_ENTITLEMENTS: { status: 403, message: 'No free entitlements remaining', field: 'entitlement' }
       };
+
+      
 
       const mapped = errorMap[error.message];
       if (mapped) {

@@ -1,5 +1,6 @@
 // backend/src/middleware/auth.ts
 import { Request, Response, NextFunction } from 'express';
+import jwt from 'jsonwebtoken';
 import { verifyAccessToken, TokenPayload } from '../utils/jwt';
 
 export interface AuthRequest extends Request {
@@ -29,6 +30,7 @@ export const authMiddleware = async (
     req.user = decoded;
     next();
   } catch (error) {
+    console.error('Token verification error:', error); // ADD THIS LINE
     if (error instanceof jwt.TokenExpiredError) {
       res.status(401).json({
         success: false,

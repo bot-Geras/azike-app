@@ -9,6 +9,7 @@ import {
   Alert,
   TextInput
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { useMembership } from '../../hooks/useMembership';
 import { api } from '../../services/api';
@@ -23,29 +24,7 @@ interface RenewalPackage {
   benefits: string[];
 }
 
-/* 
-  ------------------------------------------------------------------
-  TEST DATA: Dummy packages for Membership Renewal (Commented out)
-  ------------------------------------------------------------------
-const DUMMY_PACKAGES: RenewalPackage[] = [
-  {
-    package_id: '1',
-    name: 'Standard Monthly',
-    price: 1000,
-    currency: 'KES',
-    duration_days: 30,
-    benefits: ['Access to community events', 'Member-only announcements', 'Digital member card'],
-  },
-  {
-    package_id: '2',
-    name: 'Premium Annual',
-    price: 10000,
-    currency: 'KES',
-    duration_days: 365,
-    benefits: ['Everything in Standard', '3 free event tickets', '70% discount on all events', 'Priority support'],
-  }
-];
-*/
+
 
 export default function RenewScreen() {
   const { membership } = useMembership();
@@ -85,13 +64,18 @@ export default function RenewScreen() {
     const selectedPkg = packages.find(p => p.package_id === selectedPackage);
     if (!selectedPkg) return;
 
+    if (!phoneNumber || phoneNumber.trim() === '') {
+    Alert.alert('Phone Required', 'Please enter your M-Pesa phone number to proceed.');
+    return;
+  }
+
     setLoading(true);
     setPaymentStatus('processing');
 
     try {
       const response = await api.post('/membership/renew', {
         package_id: selectedPackage,
-        phone_number: phoneNumber || undefined
+        phone_number: phoneNumber
       });
 
       const { transaction_id, checkout_request_id, amount } = response.data.data;
@@ -115,53 +99,107 @@ export default function RenewScreen() {
     }
   };
 
+  // const startPolling = (txId: string) => {
+  //   let attempts = 0;
+  //   const maxAttempts = 20; // 60 seconds max
+
+  //   const pollInterval = setInterval(async () => {
+  //     try {
+  //       const response = await api.get(`/payments/transaction/${txId}/status`);
+  //       const { status, completed_at, failure_reason } = response.data.data;
+
+  //       if (status === 'completed') {
+  //         clearInterval(pollInterval);
+  //         setPaymentStatus('success');
+  //         Alert.alert(
+  //           'Payment Successful! 🎉',
+  //           'Your membership has been renewed successfully.',
+  //           [
+  //             {
+  //               text: 'View Card',
+  //               onPress: () => router.replace('/(tabs)/card')
+  //             }
+  //           ]
+  //         );
+  //       } else if (status === 'failed') {
+  //         clearInterval(pollInterval);
+  //         setPaymentStatus('failed');
+  //         Alert.alert(
+  //           'Payment Failed',
+  //           failure_reason || 'The payment was not completed. Please try again.',
+  //           [{ text: 'OK' }]
+  //         );
+  //       }
+
+  //       attempts++;
+  //       if (attempts >= maxAttempts) {
+  //         clearInterval(pollInterval);
+  //         setPaymentStatus('failed');
+  //         Alert.alert(
+  //           'Payment Timeout',
+  //           'We couldn\'t confirm your payment. Please check your transaction history.',
+  //           [{ text: 'OK' }]
+  //         );
+  //       }
+  //     } catch (error) {
+  //       console.error('Polling error:', error);
+  //     }
+  //   }, 3000);
+  // };
+
+
   const startPolling = (txId: string) => {
-    let attempts = 0;
-    const maxAttempts = 20; // 60 seconds max
+  let attempts = 0;
+  const maxAttempts = 20; // 20 * 3 seconds = 60 seconds max
 
-    const pollInterval = setInterval(async () => {
-      try {
-        const response = await api.get(`/payments/transaction/${txId}/status`);
-        const { status, completed_at, failure_reason } = response.data.data;
+  const pollInterval = setInterval(async () => {
+    attempts++; // Always increment, even on failure
 
-        if (status === 'completed') {
-          clearInterval(pollInterval);
-          setPaymentStatus('success');
-          Alert.alert(
-            'Payment Successful! 🎉',
-            'Your membership has been renewed successfully.',
-            [
-              {
-                text: 'View Card',
-                onPress: () => router.replace('/(tabs)/card')
-              }
-            ]
-          );
-        } else if (status === 'failed') {
-          clearInterval(pollInterval);
-          setPaymentStatus('failed');
-          Alert.alert(
-            'Payment Failed',
-            failure_reason || 'The payment was not completed. Please try again.',
-            [{ text: 'OK' }]
-          );
-        }
+    try {
+      const response = await api.get(`/payments/transaction/${txId}/status`);
+      const { status, completed_at, failure_reason } = response.data.data;
 
-        attempts++;
-        if (attempts >= maxAttempts) {
-          clearInterval(pollInterval);
-          setPaymentStatus('failed');
-          Alert.alert(
-            'Payment Timeout',
-            'We couldn\'t confirm your payment. Please check your transaction history.',
-            [{ text: 'OK' }]
-          );
-        }
-      } catch (error) {
-        console.error('Polling error:', error);
+      if (status === 'completed') {
+        clearInterval(pollInterval);
+        setPaymentStatus('success');
+        Alert.alert(
+          'Payment Successful! 🎉',
+          'Your membership has been renewed successfully.',
+          [
+            {
+              text: 'View Card',
+              onPress: () => router.replace('/(tabs)/card')
+            }
+          ]
+        );
+        return;
+      } else if (status === 'failed') {
+        clearInterval(pollInterval);
+        setPaymentStatus('failed');
+        Alert.alert(
+          'Payment Failed',
+          failure_reason || 'The payment was not completed. Please try again.',
+          [{ text: 'OK' }]
+        );
+        return;
       }
-    }, 3000);
-  };
+    } catch (error) {
+      console.error('Polling error:', error);
+      // Continue polling, but will stop after maxAttempts
+    }
+
+    // Stop after max attempts regardless of outcome
+    if (attempts >= maxAttempts) {
+      clearInterval(pollInterval);
+      setPaymentStatus('failed');
+      Alert.alert(
+        'Payment Timeout',
+        'We couldn\'t confirm your payment. Please check your transaction history.',
+        [{ text: 'OK' }]
+      );
+    }
+  }, 3000);
+};
 
   const selectedPkgDetails = packages.find(p => p.package_id === selectedPackage);
 
@@ -174,8 +212,8 @@ export default function RenewScreen() {
   }
 
   return (
-    <ScrollView className="flex-1 bg-gray-50">
-      <View className="p-5">
+    <ScrollView className="flex-1 bg-gray-50" showsVerticalScrollIndicator={false}>
+      <View className="flex-1">
         {/* Header */}
         <View className="mb-6">
           <Text className="text-2xl font-bold text-gray-800">Renew Membership</Text>

@@ -12,8 +12,10 @@ import {
   ChevronRightIcon
 } from 'react-native-heroicons/outline';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useQueryClient } from '@tanstack/react-query';
 
 export default function ProfileScreen() {
+  const queryClient = useQueryClient();
   const { user, logout } = useAuth();
 
   const handleLogout = () => {
@@ -27,6 +29,7 @@ export default function ProfileScreen() {
           style: 'destructive',
           onPress: async () => {
             await logout();
+            queryClient.clear();
             router.replace('/(auth)/login');
           }
         }
@@ -36,7 +39,7 @@ export default function ProfileScreen() {
 
   return (
     <ScrollView className="flex-1 bg-gray-50 ">
-      <SafeAreaView>
+      <View className="flex-1 ">
         {/* Profile Header */}
       <View className="bg-primary px-5 pt-12 pb-8 rounded-b-3xl">
         <View className="items-center">
@@ -103,7 +106,7 @@ export default function ProfileScreen() {
           Version 1.0.0 • AZIKE Community
         </Text>
       </View>
-      </SafeAreaView>
+      </View>
     </ScrollView>
   );
 }

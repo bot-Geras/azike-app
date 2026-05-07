@@ -26,14 +26,56 @@ const BASE_URL = config.environment === 'production'
 const CACHE_KEY = 'mpesa:access_token';
 const CACHE_TTL = 3500; // 58 minutes (token expires after 60 mins)
 
+// export async function getAccessToken(): Promise<string> {
+//   // Check cache first
+//   const cachedToken = await redis.get(CACHE_KEY);
+//   if (cachedToken) {
+//     return cachedToken;
+//   }
+
+//   // Fetch new token
+//   const auth = Buffer.from(`${config.consumerKey}:${config.consumerSecret}`).toString('base64');
+  
+//   try {
+//     const response = await fetch(
+//       `${BASE_URL}/oauth/v1/generate?grant_type=client_credentials`,
+//       {
+//         headers: {
+//           Authorization: `Basic ${auth}`
+//         }
+//       }
+//     );
+
+//     if (!response.ok) {
+//       throw new Error(`M-Pesa auth failed with status: ${response.status}`);
+//     }
+
+//     const data = (await response.json()) as { access_token: string };
+//     const accessToken = data.access_token;
+    
+//     // Cache token
+//     await redis.setex(CACHE_KEY, CACHE_TTL, accessToken);
+    
+//     console.log('✅ M-Pesa access token obtained');
+//     return accessToken;
+//   } catch (error) {
+//     console.error('❌ Failed to get M-Pesa access token:', error);
+//     throw new Error('MPESA_AUTH_FAILED');
+//   }
+// }
+
 export async function getAccessToken(): Promise<string> {
-  // Check cache first
-  const cachedToken = await redis.get(CACHE_KEY);
-  if (cachedToken) {
-    return cachedToken;
+  // Try to get cached token from Redis, but don't fail if Redis is down
+  try {
+    const cachedToken = await redis.get(CACHE_KEY);
+    if (cachedToken) {
+      return cachedToken;
+    }
+  } catch (redisError) {
+    console.warn('⚠️ Redis unavailable, skipping cache and fetching new token');
   }
 
-  // Fetch new token
+  // Fetch new token from Safaricom
   const auth = Buffer.from(`${config.consumerKey}:${config.consumerSecret}`).toString('base64');
   
   try {
@@ -53,8 +95,12 @@ export async function getAccessToken(): Promise<string> {
     const data = (await response.json()) as { access_token: string };
     const accessToken = data.access_token;
     
-    // Cache token
-    await redis.setex(CACHE_KEY, CACHE_TTL, accessToken);
+    // Try to cache the token, but ignore if Redis is unavailable
+    try {
+      await redis.setex(CACHE_KEY, CACHE_TTL, accessToken);
+    } catch (redisError) {
+      console.warn('⚠️ Could not cache token – Redis unavailable');
+    }
     
     console.log('✅ M-Pesa access token obtained');
     return accessToken;

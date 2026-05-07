@@ -57,7 +57,7 @@ export default function LoginScreen() {
           <View>
             <Text className="text-gray-700 mb-1">Email or Phone</Text>
             <TextInput
-              className="border border-gray-300 rounded-lg px-4 py-3 text-base"
+              className="border border-gray-300 rounded-lg px-4 py-3 text-base text-black"
               placeholder="sarah@example.com or 254712345678"
               value={identifier}
               onChangeText={setIdentifier}
@@ -69,7 +69,7 @@ export default function LoginScreen() {
           <View>
             <Text className="text-gray-700 mb-1">Password</Text>
             <TextInput
-              className="border border-gray-300 rounded-lg px-4 py-3 text-base"
+              className="border border-gray-300 rounded-lg px-4 py-3 text-base text-black"
               placeholder="Enter your password"
               value={password}
               onChangeText={setPassword}
