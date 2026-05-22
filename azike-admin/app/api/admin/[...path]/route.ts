@@ -1,13 +1,48 @@
-// admin/app/api/admin/[...path]/route.ts
+// // admin/app/api/admin/[...path]/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/v1';
+const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/v1';
+
+export async function GET(
+  req: NextRequest,
+  { params }: { params: Promise<{ path: string[] }> }
+) {
+  return proxyRequest(req, (await params).path);
+}
+
+export async function POST(
+  req: NextRequest,
+  { params }: { params: Promise<{ path: string[] }> }
+) {
+  return proxyRequest(req, (await params).path);
+}
+
+export async function PUT(
+  req: NextRequest,
+  { params }: { params: Promise<{ path: string[] }> }
+) {
+  return proxyRequest(req, (await params).path);
+}
+
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: Promise<{ path: string[] }> }
+) {
+  return proxyRequest(req, (await params).path);
+}
+
+export async function PATCH(
+  req: NextRequest,
+  { params }: { params: Promise<{ path: string[] }> }
+) {
+  return proxyRequest(req, (await params).path);
+}
 
 async function proxyRequest(req: NextRequest, path: string[]) {
   const session = await getServerSession(authOptions);
-  
+
   if (!session) {
     return NextResponse.json(
       { success: false, message: 'Not authenticated' },
@@ -15,66 +50,52 @@ async function proxyRequest(req: NextRequest, path: string[]) {
     );
   }
 
+  const token = (session.user as any).accessToken;
+  if (!token) {
+    return NextResponse.json(
+      { success: false, message: 'No access token' },
+      { status: 401 }
+    );
+  }
+
+  const url = `${BACKEND_URL}/admin/${path.join('/')}`;
+  const method = req.method;
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    Authorization: `Bearer ${token}`,
+  };
+
   try {
-    const method = req.method;
-    const allowedMethods = ['GET', 'POST', 'PUT', 'DELETE'];
-    
-    if (!allowedMethods.includes(method)) {
-      return NextResponse.json({ success: false, message: 'Method not allowed' }, { status: 405 });
+    let body: any;
+    if (method !== 'GET' && method !== 'HEAD') {
+      const contentType = req.headers.get('content-type');
+      if (contentType?.includes('application/json')) {
+        body = await req.json();
+      }
     }
 
-    const url = new URL(`${BACKEND_URL}/${path.join('/')}`);
-    req.nextUrl.searchParams.forEach((value, key) => {
-      url.searchParams.append(key, value);
-    });
+    const searchParams = req.nextUrl.searchParams.toString();
+    const fullUrl = searchParams ? `${url}?${searchParams}` : url;
 
-    const body = (method === 'POST' || method === 'PUT') ? await req.json().catch(() => null) : undefined;
+    console.log(`🔄 Proxying ${method} ${fullUrl}`);
 
-    const response = await fetch(url.toString(), {
+    const response = await fetch(fullUrl, {
       method,
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${(session.user as any).accessToken}`,
-      },
+      headers,
       body: body ? JSON.stringify(body) : undefined,
     });
 
-    const data = await response.json().catch(() => ({}));
-
-    if (!response.ok) {
-      return NextResponse.json(data, { status: response.status });
-    }
-
-    return NextResponse.json(data);
+    const data = await response.json();
+    return NextResponse.json(data, { status: response.status });
   } catch (error: any) {
-    return NextResponse.json({ success: false, message: 'Proxy error' }, { status: 500 });
+    console.error('Proxy error:', error.message);
+    return NextResponse.json(
+      {
+        success: false,
+        message: 'Failed to reach backend server',
+        errors: [{ message: error.message }],
+      },
+      { status: 502 }
+    );
   }
-}
-
-export async function GET(
-  req: NextRequest,
-  { params }: { params: { path: string[] } }
-) {
-  return proxyRequest(req, ['admin', ...params.path]);
-}
-
-export async function POST(
-  req: NextRequest,
-  { params }: { params: { path: string[] } }
-) {
-  return proxyRequest(req, ['admin', ...params.path]);
-}
-
-export async function PUT(
-  req: NextRequest,
-  { params }: { params: { path: string[] } }
-) {
-  return proxyRequest(req, ['admin', ...params.path]);
-}
-
-export async function DELETE(
-  req: NextRequest,
-  { params }: { params: { path: string[] } }
-) {
-  return proxyRequest(req, ['admin', ...params.path]);
 }

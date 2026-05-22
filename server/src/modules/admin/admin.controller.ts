@@ -154,4 +154,33 @@ export class AdminController {
       });
     }
   }
+
+  async getMembers(req: AuthRequest, res: Response): Promise<void> {
+    try {
+      const { page, limit, search } = req.query;
+      const members = await adminService.getMembers({
+        page: page ? parseInt(page as string) : 1,
+        limit: limit ? parseInt(limit as string) : 20,
+        search: search as string,
+      });
+      res.status(200).json({ success: true, data: members });
+    } catch (error) {
+      res.status(500).json({ success: false, message: 'Failed to fetch members' });
+    }
+  }
+
+   async getMemberById(req: AuthRequest, res: Response): Promise<void> {
+    try {
+      const member = await adminService.getMemberById(req.params.id);
+      if (!member) {
+        res.status(404).json({ success: false, message: 'Member not found' });
+        return;
+      }
+      res.status(200).json({ success: true, data: member });
+    } catch (error: any) {
+      console.error('Get member error:', error);
+      res.status(500).json({ success: false, message: error.message || 'Failed to fetch member' });
+    }
+  }
 }
+

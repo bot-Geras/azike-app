@@ -330,4 +330,120 @@ export class AdminService {
       }))
     };
   }
+
+  async getMembers(options: { page: number; limit: number; search?: string }) {
+    const { page, limit, search } = options;
+    const offset = (page - 1) * limit;
+
+    const where: Prisma.usersWhereInput = search
+      ? {
+          OR: [
+            { first_name: { contains: search, mode: 'insensitive' } },
+            { last_name: { contains: search, mode: 'insensitive' } },
+            { email: { contains: search, mode: 'insensitive' } },
+            { phone_number: { contains: search } },
+          ],
+        }
+      : {};
+
+    const [members, total] = await Promise.all([
+      prisma.users.findMany({
+        where,
+        include: {
+          memberships: {
+            orderBy: { created_at: 'desc' },
+            take: 1,
+          },
+          user_roles: true,
+        },
+        orderBy: { created_at: 'desc' },
+        take: limit,
+        skip: offset,
+      }),
+      prisma.users.count({ where }),
+    ]);
+
+    return {
+      members: members.map((m) => {
+        const membership = m.memberships[0];
+        const isActive = membership?.status === 'active' && new Date(membership.end_date) >= new Date();
+
+        return {
+          id: m.id,
+          first_name: m.first_name,
+          last_name: m.last_name,
+          email: m.email,
+          phone_number: m.phone_number,
+          status: isActive ? 'active' : membership?.status || 'expired',
+          membership_expiry: membership?.end_date || null,
+          roles: m.user_roles.map((r) => r.role),
+          joined: m.created_at,
+        };
+      }),
+      pagination: {
+        current_page: page,
+        total_pages: Math.ceil(total / limit),
+        total_members: total,
+        limit,
+      },
+    };
+  }
+
+  async getMemberById(id: string) {
+    const member = await prisma.users.findUnique({
+      where: { id },
+      include: {
+        memberships: { orderBy: { created_at: 'desc' }, take: 5 },
+        user_roles: true,
+        tickets: {
+          include: { events: true },
+          orderBy: { purchased_at: 'desc' },
+          take: 10,
+        },
+        transactions: {
+          orderBy: { created_at: 'desc' },
+          take: 10,
+        },
+      },
+    });
+
+    if (!member) return null;
+
+    return {
+      id: member.id,
+      first_name: member.first_name,
+      last_name: member.last_name,
+      email: member.email,
+      phone_number: member.phone_number,
+      roles: member.user_roles.map((r) => r.role),
+      joined: member.created_at,
+      memberships: member.memberships.map((m) => ({
+        id: m.id,
+        status: m.status,
+        start_date: m.start_date,
+        end_date: m.end_date,
+        free_events_used: m.free_events_used,
+        free_events_limit: m.free_events_limit,
+        membership_tier: m.membership_tier,
+      })),
+      tickets: member.tickets.map((t) => ({
+        id: t.id,
+        ticket_number: t.ticket_number,
+        event_title: t.events.title,
+        ticket_type: t.ticket_type,
+        price_paid: Number(t.price_paid),
+        is_checked_in: t.is_checked_in,
+        purchased_at: t.purchased_at,
+      })),
+      transactions: member.transactions.map((tx) => ({
+        id: tx.id,
+        amount: Number(tx.amount),
+        type: tx.transaction_type,
+        status: tx.status,
+        receipt: tx.mpesa_receipt_number,
+        created_at: tx.created_at,
+      })),
+    };
+  }
+
 }

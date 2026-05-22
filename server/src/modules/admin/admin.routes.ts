@@ -18,6 +18,8 @@ router.post('/events', controller.createEvent.bind(controller));
 router.put('/events/:id', controller.updateEvent.bind(controller));
 router.delete('/events/:id', controller.deleteEvent.bind(controller));
 
+router.get('/members', controller.getMembers.bind(controller));
+router.get('/members/:id', controller.getMemberById.bind(controller));
 // Announcements management
 router.get('/announcements', controller.getAnnouncements.bind(controller));
 router.post('/announcements', controller.createAnnouncement.bind(controller));
