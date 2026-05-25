@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation';
 import { authOptions } from '@/lib/auth';
 
 async function getStats(accessToken: string) {
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/v1';
+  const API_URL = process.env.NEXT_PUBLIC_API_URL
 
   try {
     const res = await fetch(`${API_URL}/admin/dashboard/stats`, {
