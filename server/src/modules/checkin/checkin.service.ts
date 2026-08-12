@@ -1,4 +1,3 @@
-// backend/src/modules/checkin/checkin.service.ts
 import { prisma} from '../../../lib/prisma'
 import crypto from 'crypto';
 

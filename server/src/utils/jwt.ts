@@ -1,4 +1,3 @@
-// backend/src/utils/jwt.ts
 import jwt from 'jsonwebtoken';
 import { StringValue } from 'ms';
 

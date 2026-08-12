@@ -1,4 +1,3 @@
-// backend/src/modules/payments/payments.service.ts
 import { prisma} from '../../../lib/prisma'
 import { Prisma } from '../../../generated/prisma/client';
 import { getAccessToken, generatePassword, getFormattedTimestamp, formatPhoneNumber, BASE_URL } from '../../config/mpesa';

@@ -1,4 +1,3 @@
-// backend/src/services/notification.service.ts
 import { prisma} from '../../lib/prisma'
 import { FCM_SERVER_KEY } from '../config/env';
 

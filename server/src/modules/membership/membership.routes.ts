@@ -1,4 +1,3 @@
-// backend/src/modules/membership/membership.routes.ts (Updated)
 import { Router } from 'express';
 import { MembershipController } from './membership.controller';
 import { MembershipRenewalController } from './membership-renewal.controller';

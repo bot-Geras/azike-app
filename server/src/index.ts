@@ -75,55 +75,108 @@ const getLocalIP = () => {
 };
 
 app.listen(port, '0.0.0.0', () => {
-  const localIP = getLocalIP();
-  console.log(`
-╔══════════════════════════════════════════════════════════════╗
-║                                                              ║
-║   🚀 AZIKE Community API is running!                         ║
-║                                                              ║
-║   📍 Local:            http://localhost:${port}                 ║
-║   🌐 Network:          http://${localIP}:${port}             ║
-║   📊 Health check:     http://${localIP}:${port}/health      ║
-║   📝 API Base:         http://${localIP}:${port}/v1          ║
-║                                                              ║
-║   📋 Available Routes:                                        ║
-║      POST   /v1/auth/register                                ║
-║      POST   /v1/auth/login                                   ║
-║      POST   /v1/auth/refresh                                 ║
-║      GET    /v1/auth/me                                      ║
-║      POST   /v1/auth/device-token                            ║
-║      GET    /v1/membership/status                            ║
-║      GET    /v1/membership/card                              ║
-║      GET    /v1/membership/renewal-options                   ║
-║      POST   /v1/membership/renew                             ║
-║      POST   /v1/payments/mpesa/stkpush                       ║
-║      POST   /v1/payments/mpesa/callback (webhook)            ║
-║      GET    /v1/payments/transaction/:id/status              ║
-║      GET    /v1/payments/transactions                        ║
-║      GET    /v1/events                                       ║
-║      GET    /v1/events/:id                                   ║
-║      POST   /v1/tickets/events/:eventId/purchase             ║
-║      GET    /v1/tickets/my                                   ║
-║      POST   /v1/checkin/scan                                 ║
-║      GET    /v1/announcements                                ║
-║      GET    /v1/announcements/notifications                  ║
-║      PATCH  /v1/announcements/notifications/:id/read         ║
-║      PATCH  /v1/announcements/notifications/read-all         ║
-║      GET    /v1/admin/dashboard/stats                        ║
-║      GET    /v1/admin/events                                 ║
-║      POST   /v1/admin/events                                 ║
-║      PUT    /v1/admin/events/:id                             ║
-║      DELETE /v1/admin/events/:id                             ║
-║      GET    /v1/admin/announcements                          ║
-║      POST   /v1/admin/announcements                          ║
-║                                                              ║
-║   ⏰ Cron Jobs Initialized:                                   ║
-║      - Membership expiry (daily at midnight)                 ║
-║      - Expiry reminders (daily at 9 AM)                      ║
-║      - Event reminders (daily at 10 AM)                      ║
-║      - Entitlement reset (Jan 1st)                           ║
-║      - Stale transaction cleanup (every 15 min)              ║
-║                                                              ║
-╚══════════════════════════════════════════════════════════════╝
-  `)
+  //const localIP = getLocalIP();
+//   console.log(`
+// ╔══════════════════════════════════════════════════════════════╗
+// ║                                                              ║
+// ║   🚀 AZIKE Community API is running!                         ║
+// ║                                                              ║
+// ║   📍 Local:            http://localhost:${port}                 ║
+// ║   🌐 Network:          http://${localIP}:${port}             ║
+// ║   📊 Health check:     http://${localIP}:${port}/health      ║
+// ║   📝 API Base:         http://${localIP}:${port}/v1          ║
+// ║                                                              ║
+// ║   📋 Available Routes:                                        ║
+// ║      POST   /v1/auth/register                                ║
+// ║      POST   /v1/auth/login                                   ║
+// ║      POST   /v1/auth/refresh                                 ║
+// ║      GET    /v1/auth/me                                      ║
+// ║      POST   /v1/auth/device-token                            ║
+// ║      GET    /v1/membership/status                            ║
+// ║      GET    /v1/membership/card                              ║
+// ║      GET    /v1/membership/renewal-options                   ║
+// ║      POST   /v1/membership/renew                             ║
+// ║      POST   /v1/payments/mpesa/stkpush                       ║
+// ║      POST   /v1/payments/mpesa/callback (webhook)            ║
+// ║      GET    /v1/payments/transaction/:id/status              ║
+// ║      GET    /v1/payments/transactions                        ║
+// ║      GET    /v1/events                                       ║
+// ║      GET    /v1/events/:id                                   ║
+// ║      POST   /v1/tickets/events/:eventId/purchase             ║
+// ║      GET    /v1/tickets/my                                   ║
+// ║      POST   /v1/checkin/scan                                 ║
+// ║      GET    /v1/announcements                                ║
+// ║      GET    /v1/announcements/notifications                  ║
+// ║      PATCH  /v1/announcements/notifications/:id/read         ║
+// ║      PATCH  /v1/announcements/notifications/read-all         ║
+// ║      GET    /v1/admin/dashboard/stats                        ║
+// ║      GET    /v1/admin/events                                 ║
+// ║      POST   /v1/admin/events                                 ║
+// ║      PUT    /v1/admin/events/:id                             ║
+// ║      DELETE /v1/admin/events/:id                             ║
+// ║      GET    /v1/admin/announcements                          ║
+// ║      POST   /v1/admin/announcements                          ║
+// ║                                                              ║
+// ║   ⏰ Cron Jobs Initialized:                                   ║
+// ║      - Membership expiry (daily at midnight)                 ║
+// ║      - Expiry reminders (daily at 9 AM)                      ║
+// ║      - Event reminders (daily at 10 AM)                      ║
+// ║      - Entitlement reset (Jan 1st)                           ║
+// ║      - Stale transaction cleanup (every 15 min)              ║
+// ║                                                              ║
+// ╚══════════════════════════════════════════════════════════════╝
+//   `)
 })
+
+
+
+// `
+// ╔══════════════════════════════════════════════════════════════╗
+// ║                                                              ║
+// ║   🚀 AZIKE Community API is running!                         ║
+// ║                                                              ║
+// ║   📍 Local:            http://localhost:${port}                 ║
+// ║   🌐 Network:          http://${localIP}:${port}             ║
+// ║   📊 Health check:     http://${localIP}:${port}/health      ║
+// ║   📝 API Base:         http://${localIP}:${port}/v1          ║
+// ║                                                              ║
+// ║   📋 Available Routes:                                        ║
+// ║      POST   /v1/auth/register                                ║
+// ║      POST   /v1/auth/login                                   ║
+// ║      POST   /v1/auth/refresh                                 ║
+// ║      GET    /v1/auth/me                                      ║
+// ║      POST   /v1/auth/device-token                            ║
+// ║      GET    /v1/membership/status                            ║
+// ║      GET    /v1/membership/card                              ║
+// ║      GET    /v1/membership/renewal-options                   ║
+// ║      POST   /v1/membership/renew                             ║
+// ║      POST   /v1/payments/mpesa/stkpush                       ║
+// ║      POST   /v1/payments/mpesa/callback (webhook)            ║
+// ║      GET    /v1/payments/transaction/:id/status              ║
+// ║      GET    /v1/payments/transactions                        ║
+// ║      GET    /v1/events                                       ║
+// ║      GET    /v1/events/:id                                   ║
+// ║      POST   /v1/tickets/events/:eventId/purchase             ║
+// ║      GET    /v1/tickets/my                                   ║
+// ║      POST   /v1/checkin/scan                                 ║
+// ║      GET    /v1/announcements                                ║
+// ║      GET    /v1/announcements/notifications                  ║
+// ║      PATCH  /v1/announcements/notifications/:id/read         ║
+// ║      PATCH  /v1/announcements/notifications/read-all         ║
+// ║      GET    /v1/admin/dashboard/stats                        ║
+// ║      GET    /v1/admin/events                                 ║
+// ║      POST   /v1/admin/events                                 ║
+// ║      PUT    /v1/admin/events/:id                             ║
+// ║      DELETE /v1/admin/events/:id                             ║
+// ║      GET    /v1/admin/announcements                          ║
+// ║      POST   /v1/admin/announcements                          ║
+// ║                                                              ║
+// ║   ⏰ Cron Jobs Initialized:                                   ║
+// ║      - Membership expiry (daily at midnight)                 ║
+// ║      - Expiry reminders (daily at 9 AM)                      ║
+// ║      - Event reminders (daily at 10 AM)                      ║
+// ║      - Entitlement reset (Jan 1st)                           ║
+// ║      - Stale transaction cleanup (every 15 min)              ║
+// ║                                                              ║
+// ╚══════════════════════════════════════════════════════════════╝
+//   `

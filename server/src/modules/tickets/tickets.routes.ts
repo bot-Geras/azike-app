@@ -1,4 +1,3 @@
-// backend/src/modules/tickets/tickets.routes.ts
 import { Router } from 'express';
 import { TicketsController } from './tickets.controller';
 import { authMiddleware } from '../../middleware/auth';

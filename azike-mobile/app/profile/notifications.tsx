@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { View, Text, ScrollView, Switch, TouchableOpacity, Alert } from 'react-native';
 import { 

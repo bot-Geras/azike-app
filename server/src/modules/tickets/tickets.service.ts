@@ -1,6 +1,4 @@
-// backend/src/modules/tickets/tickets.service.ts
-//  import prisma from '../../config/database';
- import { prisma} from '../../../lib/prisma'
+import { prisma} from '../../../lib/prisma'
 import { Prisma } from '../../../generated/prisma/client';
 import { PaymentsService } from '../payments/payments.service';
 import crypto from 'crypto';

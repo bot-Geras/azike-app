@@ -1,4 +1,3 @@
-// backend/src/modules/announcements/announcements.controller.ts
 import { Response } from 'express';
 import { AuthRequest } from '../../middleware/auth';
 import { AnnouncementsService } from './announcements.service';

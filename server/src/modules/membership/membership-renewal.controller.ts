@@ -1,4 +1,3 @@
-// backend/src/modules/membership/membership-renewal.controller.ts
 import { Response } from 'express';
 import { AuthRequest } from '../../middleware/auth';
 import { MembershipRenewalService } from './membership-renewal.service';

@@ -1,4 +1,3 @@
-// backend/src/config/mpesa.ts
 import { redis } from './redis';
 
 interface MpesaConfig {

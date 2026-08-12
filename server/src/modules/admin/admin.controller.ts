@@ -1,4 +1,3 @@
-// backend/src/modules/admin/admin.controller.ts
 import { Response } from 'express';
 import { AuthRequest } from '../../middleware/auth';
 import { AdminService } from './admin.service';
@@ -171,7 +170,7 @@ export class AdminController {
 
    async getMemberById(req: AuthRequest, res: Response): Promise<void> {
     try {
-      const member = await adminService.getMemberById(req.params.id);
+      const member = await adminService.getMemberById(req.params.id as string);
       if (!member) {
         res.status(404).json({ success: false, message: 'Member not found' });
         return;

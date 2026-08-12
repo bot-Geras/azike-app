@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
@@ -13,41 +12,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useTicket } from '../../hooks/useTickets';
 
-/* 
-  ------------------------------------------------------------------
-  TEST DATA: Dummy ticket details for Ticket Detail Screen (Commented out)
-  ------------------------------------------------------------------
-const DUMMY_TICKET_DETAILS: Record<string, any> = {
-  '1': {
-    ticket_id: '1',
-    ticket_number: 'AZK-2024-001',
-    event: {
-      id: '2',
-      title: 'Annual Charity Gala',
-      start_datetime: '2024-06-02T19:30:00Z',
-      location: 'Grand Ballroom, Nairobi',
-    },
-    ticket_type: 'member_early_bird',
-    qr_code_data: 'TICKET-AZK-2024-001-GALA',
-    is_checked_in: false,
-    checked_in_at: null,
-  },
-  '2': {
-    ticket_id: '2',
-    ticket_number: 'AZK-2024-045',
-    event: {
-      id: '5',
-      title: 'Jazz Night under the Stars',
-      start_datetime: '2024-05-28T20:00:00Z',
-      location: 'Riverside Gardens',
-    },
-    ticket_type: 'regular',
-    qr_code_data: 'TICKET-AZK-2024-045-JAZZ',
-    is_checked_in: true,
-    checked_in_at: '2024-05-28T20:15:00Z',
-  }
-};
-*/
+
 
 export default function TicketDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();

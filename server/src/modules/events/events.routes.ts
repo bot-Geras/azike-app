@@ -1,4 +1,3 @@
-// backend/src/modules/events/events.routes.ts
 import { Router } from 'express';
 import { EventsController } from './events.controller';
 import { authMiddleware } from '../../middleware/auth';

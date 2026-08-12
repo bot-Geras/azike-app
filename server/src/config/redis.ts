@@ -1,4 +1,3 @@
-// backend/src/config/redis.ts
 import Redis from 'ioredis';
 import { REDIS_URL } from './env';
 

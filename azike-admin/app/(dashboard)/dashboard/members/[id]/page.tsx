@@ -1,4 +1,3 @@
-// admin/app/(dashboard)/members/[id]/page.tsx
 'use client';
 
 import { useState, useEffect } from 'react';

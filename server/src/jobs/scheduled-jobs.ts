@@ -1,4 +1,3 @@
-// backend/src/jobs/scheduled-jobs.ts
 import cron from 'node-cron';
 import {prisma} from '../../lib/prisma'
 import { NotificationService } from '../services/notification.service';

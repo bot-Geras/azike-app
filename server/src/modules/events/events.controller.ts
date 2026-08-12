@@ -1,4 +1,3 @@
-// backend/src/modules/events/events.controller.ts
 import { Request, Response } from 'express';
 import { AuthRequest } from '../../middleware/auth';
 import { EventsService } from './events.service';

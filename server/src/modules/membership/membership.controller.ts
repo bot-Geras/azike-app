@@ -1,4 +1,3 @@
-// backend/src/modules/membership/membership.controller.ts
 import { Response } from 'express';
 import { AuthRequest } from '../../middleware/auth';
 import { MembershipService } from './membership.service';

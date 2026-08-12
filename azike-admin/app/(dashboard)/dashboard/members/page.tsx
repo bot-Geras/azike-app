@@ -1,4 +1,3 @@
-// admin/app/(dashboard)/members/page.tsx
 import { getServerSession } from 'next-auth';
 import { redirect } from 'next/navigation';
 import { authOptions } from '@/lib/auth';
@@ -25,6 +24,7 @@ export default async function MembersPage() {
   if (!session) redirect('/login');
 
   const stats = await getMembers((session.user as any).accessToken);
+  console.log('stats:', stats);
 
   // Placeholder members data
   const members = [

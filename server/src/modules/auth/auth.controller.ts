@@ -1,4 +1,3 @@
-// backend/src/modules/auth/auth.controller.ts
 import { Request, Response } from 'express';
 import { AuthService } from './auth.service';
 import { AuthRequest } from '../../middleware/auth';

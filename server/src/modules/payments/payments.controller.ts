@@ -1,4 +1,3 @@
-// backend/src/modules/payments/payments.controller.ts
 import { Request, Response } from 'express';
 import { AuthRequest } from '../../middleware/auth';
 import { PaymentsService } from './payments.service';

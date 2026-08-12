@@ -1,4 +1,3 @@
-// backend/src/modules/checkin/checkin.controller.ts
 import { Response } from 'express';
 import { AuthRequest } from '../../middleware/auth';
 import { CheckinService } from './checkin.service';

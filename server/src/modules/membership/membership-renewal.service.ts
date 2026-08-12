@@ -1,4 +1,3 @@
-// backend/src/modules/membership/membership-renewal.service.ts
 import { prisma} from '../../../lib/prisma'
 import { PaymentsService } from '../payments/payments.service';
 

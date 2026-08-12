@@ -1,4 +1,3 @@
-// backend/src/modules/membership/membership.service.ts
 import { prisma} from '../../../lib/prisma'
 import { generateBarcodeData, generateMemberId } from '../../utils/barcode';
 

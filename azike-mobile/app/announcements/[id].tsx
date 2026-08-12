@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { View, Text, ScrollView, Image, ActivityIndicator, TouchableOpacity } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';

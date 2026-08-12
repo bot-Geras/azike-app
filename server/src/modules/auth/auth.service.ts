@@ -1,4 +1,3 @@
-// backend/src/modules/auth/auth.service.ts
 import bcrypt from 'bcrypt';
 import { prisma} from '../../../lib/prisma'
 import { generateTokens, TokenPayload, verifyRefreshToken } from '../../utils/jwt';

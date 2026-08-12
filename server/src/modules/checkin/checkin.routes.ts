@@ -1,4 +1,3 @@
-// backend/src/modules/checkin/checkin.routes.ts
 import { Router } from 'express';
 import { CheckinController } from './checkin.controller';
 import { authMiddleware } from '../../middleware/auth';

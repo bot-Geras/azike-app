@@ -1,4 +1,3 @@
-
 import { View, Text, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import { router } from 'expo-router';
 import { CreditCardIcon, PlusIcon, TrashIcon } from 'react-native-heroicons/outline';

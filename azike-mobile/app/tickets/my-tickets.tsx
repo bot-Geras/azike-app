@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { 
   View, 
@@ -32,43 +31,7 @@ interface Ticket {
 
 import { useTickets } from '../../hooks/useTickets';
 
-/* 
-  ------------------------------------------------------------------
-  TEST DATA: Dummy tickets for My Tickets Screen (Commented out)
-  ------------------------------------------------------------------
-const DUMMY_TICKETS: Ticket[] = [
-  {
-    ticket_id: '1',
-    ticket_number: 'AZK-2024-001',
-    event: {
-      id: '2',
-      title: 'Annual Charity Gala',
-      start_datetime: '2024-06-02T19:30:00Z',
-      location: 'Grand Ballroom, Nairobi',
-      banner_image_url: 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=800&auto=format&fit=crop&q=60',
-    },
-    ticket_type: 'member_early_bird',
-    price_paid: 1500,
-    is_checked_in: false,
-    purchased_at: '2024-04-10T10:00:00Z',
-  },
-  {
-    ticket_id: '2',
-    ticket_number: 'AZK-2024-045',
-    event: {
-      id: '5',
-      title: 'Jazz Night under the Stars',
-      start_datetime: '2024-05-28T20:00:00Z',
-      location: 'Riverside Gardens',
-      banner_image_url: 'https://images.unsplash.com/photo-1514525253361-bee8718a7439?w=800&auto=format&fit=crop&q=60',
-    },
-    ticket_type: 'regular',
-    price_paid: 1000,
-    is_checked_in: true,
-    purchased_at: '2024-05-01T14:30:00Z',
-  }
-];
-*/
+
 
 export default function MyTicketsScreen() {
   const [selectedFilter, setSelectedFilter] = useState<'upcoming' | 'past'>('upcoming');

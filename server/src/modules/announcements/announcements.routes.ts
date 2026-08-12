@@ -1,4 +1,3 @@
-// backend/src/modules/announcements/announcements.routes.ts
 import { Router } from 'express';
 import { AnnouncementsController } from './announcements.controller';
 import { authMiddleware } from '../../middleware/auth';

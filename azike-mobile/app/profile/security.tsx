@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { View, Text, ScrollView, TextInput, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
 import { api } from '../../services/api';

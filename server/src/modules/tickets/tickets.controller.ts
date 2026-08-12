@@ -1,4 +1,3 @@
-// backend/src/modules/tickets/tickets.controller.ts
 import { Response } from 'express';
 import { AuthRequest } from '../../middleware/auth';
 import { TicketsService } from './tickets.service';
@@ -8,7 +7,8 @@ const ticketsService = new TicketsService();
 export class TicketsController {
   async purchaseTicket(req: AuthRequest, res: Response): Promise<void> {
     try {
-      const { eventId } = req.params;
+      const rawEventId = req.params.eventId;
+      const eventId = Array.isArray(rawEventId) ? rawEventId[0] : rawEventId;
       const { use_free_entitlement, phone_number, attendee_details } = req.body;
       
       const result = await ticketsService.purchaseTicket({

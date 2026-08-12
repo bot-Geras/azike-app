@@ -1,4 +1,3 @@
-
 import { Tabs, Redirect } from 'expo-router';
 import { useAuthStore } from '../../stores/authStore';
 import { HomeIcon, TicketIcon, QrCodeIcon, UserIcon } from 'react-native-heroicons/outline';

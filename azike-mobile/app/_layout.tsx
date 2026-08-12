@@ -1,4 +1,3 @@
-
 import { useEffect, useRef } from 'react';
 import { Stack } from 'expo-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -16,8 +15,8 @@ const queryClient = new QueryClient();
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
-  const notificationListener = useRef<Notifications.EventSubscription>();
-  const responseListener = useRef<Notifications.EventSubscription>();
+  const notificationListener = useRef<Notifications.EventSubscription | null>(null);
+  const responseListener = useRef<Notifications.EventSubscription | null>(null);
   const { isAuthenticated, isHydrated, token, fetchMe, updateDeviceToken } = useAuthStore();
 
   useEffect(() => {

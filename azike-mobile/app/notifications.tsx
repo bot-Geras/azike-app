@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { 
   View, 
@@ -54,7 +53,7 @@ export default function NotificationsScreen() {
     // Mark as read
     if (!notification.is_read) {
       try {
-        await api.patch(`/announcements/notifications/${notification.id}/read`);
+        await api.put(`/announcements/notifications/${notification.id}/read`);
         setNotifications(prev => 
           prev.map(n => 
             n.id === notification.id ? { ...n, is_read: true } : n
@@ -84,7 +83,7 @@ export default function NotificationsScreen() {
 
   const markAllAsRead = async () => {
     try {
-      await api.patch('/announcements/notifications/read-all');
+      await api.put('/announcements/notifications/read-all');
       setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
       setUnreadCount(0);
     } catch (error) {

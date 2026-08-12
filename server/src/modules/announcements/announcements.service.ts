@@ -1,4 +1,3 @@
-// backend/src/modules/announcements/announcements.service.ts
 import { prisma} from '../../../lib/prisma'
 import { NotificationService } from '../../services/notification.service';
 

@@ -1,4 +1,3 @@
-// backend/src/modules/events/events.service.ts
 import { prisma} from '../../../lib/prisma'
 import { Prisma } from '../../../generated/prisma/client';
 
